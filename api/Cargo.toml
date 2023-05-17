@@ -2,3 +2,6 @@
 name = "api"
 version = "0.1.0"
 edition = "2021"
+
+[dependencies]
+actix-web = "4.3.1"
