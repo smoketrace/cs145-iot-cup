@@ -1,14 +1,24 @@
+const express = require('express');
+const Joi = require('joi');       // joi for input validation
 const http = require('http');
+const app = express();
+const cors = require('cors')
 
-const hostname = '127.0.0.1';
-const port = 3000;
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World');
-});
+app.use(cors())
+const PORT = 3000;
+app.use(express.json());
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+
+
+const sensors = require('./routes/sensors')
+app.use('/api/sensors', sensors);
+
+
+
+app.get('/', (req, res) => {
+  res.send('Hello worlddddd');
+})
+
+
+app.listen(PORT, () => console.log('Server is now running'));
