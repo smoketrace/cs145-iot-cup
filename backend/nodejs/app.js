@@ -6,7 +6,7 @@ const cors = require('cors')
 
 
 app.use(cors())
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 
@@ -21,4 +21,4 @@ app.get('/', (req, res) => {
 })
 
 
-app.listen(PORT, () => console.log('Server is now running'));
+app.listen(PORT, () => console.log(`Server is now running at ${PORT}`));
