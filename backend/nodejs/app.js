@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 
+const phone_directory = require('./routes/phone_directory')
+app.use('/api/phones', phone_directory);
 
 const sensors = require('./routes/sensors')
 app.use('/api/sensors', sensors);
