@@ -1,13 +1,20 @@
+// Include essential libraries
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
-#include <cstdio>
+#include <stdio.h>
 #include <time.h>
+#include "EasyBuzzer.h"
+
+// Include definitions
 
 // Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
 #define SMOKE_INT 5
+
+// Define BUZZER_PIN to be the pin used for the buzzer
+#define BUZZER_PIN 18
 
 // Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
 const char* rootCACertificate = \
@@ -78,7 +85,7 @@ int time_offset() {
 }
 
 void setup() {
-
+  // Set up Serial Monitor at 115200 baud
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
@@ -89,7 +96,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   // WiFiMulti.addAP("Proposal", "approved");
   // WiFiMulti.addAP("4studentstoo", "W1F14students");
-  WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Matimtiman");
+  WiFiMulti.addAP("Redmi Note 9", "12343210");
   WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Mat");
 
   // wait for WiFi connection
@@ -121,6 +128,14 @@ void loop() {
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = https.POST(buffer);
+    if (smoke_read >= 0 && smoke_read <= 2) {
+      /* Beep at a given frequency for specific number of times. */
+	    EasyBuzzer.beep(1000, 10);
+    }
+    else {
+      EasyBuzzer.stopBeep();
+    }
+    EasyBuzzer.update();
     smoke_read++; // temporary smoke_read for debugs
     // httpCode will be negative on error
     if (httpCode > 0) {
