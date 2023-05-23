@@ -1,8 +1,13 @@
-import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { collection, getFirestore, addDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { oakCors } from "https://deno.land/x/cors/mod.ts";
+
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
+
+
+
 
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
@@ -15,6 +20,7 @@ type sensorData = {
 
 // Create instance of App Server
 const app = new Application();
+app.use(oakCors());
 
 // Response time
 app.use(async (ctx, next) => {
