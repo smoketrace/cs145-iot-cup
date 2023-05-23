@@ -1,0 +1,14 @@
+{
+	"/": [
+		"src/routes/+page.ts"
+	],
+	"/about": [
+		"src/routes/about/+page.ts"
+	],
+	"/eventlogs": [
+		"src/routes/eventlogs/+page.ts"
+	],
+	"/graph": [
+		"src/routes/graph/+page.ts"
+	]
+}

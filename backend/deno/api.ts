@@ -2,14 +2,7 @@ import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { collection, getFirestore, addDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAORQ_IaDvP8vyLhdPAitFBgNcYgFqxt4g",
-    authDomain: "smoketrace-145.firebaseapp.com",
-    projectId: "smoketrace-145",
-    storageBucket: "smoketrace-145.appspot.com",
-    messagingSenderId: "921150291554",
-    appId: "1:921150291554:web:f443c1e1fc2bc950df1b3b"
-};
+const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
