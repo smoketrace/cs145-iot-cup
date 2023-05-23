@@ -1,20 +1,15 @@
-/**
-   BasicHTTPSClient.ino
-
-    Created on: 14.10.2018
-
-*/
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <cstdio>
+#include <time.h>
 
-// This is GandiStandardSSLCA2.pem, the root Certificate Authority that signed 
-// the server certifcate for the demo server https://jigsaw.w3.org in this
-// example. This certificate is valid until Sep 11 23:59:59 2024 GMT
+// Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
+#define SMOKE_INT 5
+
+// Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
 const char* rootCACertificate = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIICGzCCAaGgAwIBAgIQQdKd0XLq7qeAwSxs6S+HUjAKBggqhkjOPQQDAzBPMQsw\n" \
@@ -31,13 +26,28 @@ const char* rootCACertificate = \
 "/q4AaOeMSQ+2b1tbFfLn\n" \
 "-----END CERTIFICATE-----\n";
 
-// for debugs
+// Initialize smoke_read for smoke readings
 int smoke_read = 0;
+
+// Setup WiFiMulti variable for scanning WiFi access points
+WiFiMulti WiFiMulti;
+
+// Setup secure WiFi client
+WiFiClientSecure client;
+
+// Setup HTTP client
+HTTPClient https;
+
+// Buffer to contain sensor data to be sent to the server
+char buffer[200];
+
+// Define curr_time as printable current time
+char * curr_time;
 
 // Not sure if WiFiClientSecure checks the validity date of the certificate. 
 // Setting clock just to be sure...
 void setClock() {
-  configTime(0, 0, "pool.ntp.org");
+  configTime(28800, 0, "pool.ntp.org");
 
   Serial.print(F("Waiting for NTP time sync: "));
   time_t nowSecs = time(nullptr);
@@ -49,15 +59,23 @@ void setClock() {
   }
 
   Serial.println();
-  struct tm timeinfo;
-  gmtime_r(&nowSecs, &timeinfo);
+  char * curr_time = ctime(&nowSecs);
   Serial.print(F("Current time: "));
-  Serial.print(asctime(&timeinfo));
+  Serial.print(curr_time);
 }
 
+char * getTime() {
+  time_t raw_time = time(nullptr);
+  char * ret_time = ctime(&raw_time);
+  ret_time[strlen(ret_time)-1] = '\0';
+  return ret_time;
+}
 
-
-WiFiMulti WiFiMulti;
+int time_offset() {
+  time_t raw_time = time(nullptr);
+  struct tm * curr_time = localtime(&raw_time);
+  return (SMOKE_INT - (curr_time->tm_sec % SMOKE_INT))*1000;
+}
 
 void setup() {
 
@@ -69,7 +87,10 @@ void setup() {
   Serial.println();
 
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP("Proposal", "approved");
+  // WiFiMulti.addAP("Proposal", "approved");
+  // WiFiMulti.addAP("4studentstoo", "W1F14students");
+  WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Matimtiman");
+  WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Mat");
 
   // wait for WiFi connection
   Serial.print("Waiting for WiFi to connect...");
@@ -78,54 +99,47 @@ void setup() {
   }
   Serial.println(" connected");
 
+  // Set certificate for the client
+  client.setCACert(rootCACertificate);
+
+  // allow reuse (if server supports it)
+  https.setReuse(true);
+
   setClock();  
+  
 }
 
 void loop() {
-  WiFiClientSecure *client = new WiFiClientSecure;
-  if(client) {
-    client -> setCACert(rootCACertificate);
+  Serial.print("[HTTPS] begin...\n");
+  if (https.begin(client, "https://hascion-deno-test.deno.dev/sensors")) {  // HTTPS
+    Serial.print("[HTTPS] POST...\n");
+    // payload
+    // Calibrate time to nearest 10 seconds
+    delay(time_offset());
+    curr_time = getTime();
+    sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": \"%s\"}", smoke_read, curr_time);
+    Serial.print(buffer);
+    // start connection and send HTTP header
+    int httpCode = https.POST(buffer);
+    smoke_read++; // temporary smoke_read for debugs
+    // httpCode will be negative on error
+    if (httpCode > 0) {
+      // HTTP header has been send and Server response header has been handled
+      Serial.printf("[HTTPS] POST... code: %d\n", httpCode);
 
-    {
-      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
-      HTTPClient https;
-      char buffer[100];
-      sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": \"oras mo na\"}", smoke_read);
-  
-      Serial.print("[HTTPS] begin...\n");
-      if (https.begin(*client, "https://hascion-deno-test.deno.dev/sensors")) {  // HTTPS
-        Serial.print("[HTTPS] POST...\n");
-        // start connection and send HTTP header
-        int httpCode = https.POST(buffer);
-        smoke_read++; // temporary smoke_read for debugs
-        // httpCode will be negative on error
-        if (httpCode > 0) {
-          // HTTP header has been send and Server response header has been handled
-          Serial.printf("[HTTPS] POST... code: %d\n", httpCode);
-  
-          // file found at server
-          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-            String payload = https.getString();
-            Serial.println(payload);
-          }
-        } else {
-          Serial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-        }
-  
-        https.end();
-      } else {
-        Serial.printf("[HTTPS] Unable to connect\n");
+      // file found at server
+      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+        String payload = https.getString();
+        Serial.println(payload);
       }
-
-      // End extra scoping block
+    } else {
+      Serial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
     }
-  
-    delete client;
-  } else {
-    Serial.println("Unable to create client");
-  }
 
+    https.end();
+  } else {
+    Serial.printf("[HTTPS] Unable to connect\n");
+  }
   Serial.println();
   Serial.println("Waiting 10s before the next round...");
-  delay(10000);
 }
