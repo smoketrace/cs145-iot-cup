@@ -41,11 +41,11 @@ jobs:
 
       - name: Build site
         run: pnpm build
-        working-directory: './frontend' # if necessary, should contain {out}
+        working-directory: frontend
 
       - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: smoketrace-frontend
-          entrypoint: '{out}/index.js' # same as `out` option in config
-          root: build # if necessary
+          entrypoint: build/index.js
+          root: frontend
