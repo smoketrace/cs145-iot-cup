@@ -3,10 +3,10 @@ name: ci
 on:
   push:
     branches:
-      - frontend-svelte
+      - [frontend-svelte, main]
   pull_request:
     branches:
-      - frontend-svelte
+      - [frontend-svelte, main]
 
 jobs:
   deploy:
