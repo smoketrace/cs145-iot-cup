@@ -49,3 +49,7 @@ jobs:
           project: smoketrace-frontend
           entrypoint: build/index.js
           root: frontend
+
+      - name: Install Twilio API
+        run: pnpm install twilio
+        working-directory: backend
