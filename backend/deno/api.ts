@@ -99,14 +99,15 @@ router
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
-            GREEN, // Set status to GREEN upon receiving the POST request
-            smoke_read, // Set last_read to received smoke_read
-            time, // Set last_alive to received time
+            status: GREEN, // Set status to GREEN upon receiving the POST request
+            last_read: smoke_read, // Set last_read to received smoke_read
+            last_alive: time, // Set last_alive to received time
             timeout_handler, // Store the timeout handler for the current device
         };
 
         // Update device information of the device in the device map
         devices.set(device_id, device_info); // Set timeout for 15 seconds
+        //console.log(devices.get(device_id));
 
         // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
         if (!device_id || !time) {
