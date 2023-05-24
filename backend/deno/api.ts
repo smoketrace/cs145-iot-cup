@@ -6,8 +6,8 @@ import { oakCors } from "https://deno.land/x/cors/mod.ts";
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 
-
-
+// Dictionary to store device timers
+const devices = new Map<string, ReturnType<typeof setTimeout>>(); // Create a device map that stores the timeout handlers for each device
 
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
@@ -73,6 +73,17 @@ router
     .post('/sensors', async (context) => {
         const { device_id, smoke_read, time } = await context.request.body({ type: 'json' }).value;
         
+        // Refresh timer for device_id if the device already exists in the device map
+        if (devices.has(device_id)){ // If the device ID already exists in the device map
+            device_timer = devices.get(device_id); // Obtain the handler identifier stored in the device map
+            clearTimeout(device_timer); // Deactivate timer set with handler identifier stored in the device map
+        }
+
+        // Allocate new asynchronous timer to the device
+        devices.set(device_id, setTimeout(() => {
+            console.log("${device_id} did not respond for 15 seconds"); // Print to console upon 15 seconds of not POST-ing
+        }, 15000); // Set timeout for 15 seconds
+
         // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
         if (!device_id || !time) {
             context.response.body = "Sensor data cannot be uploaded! 😭"
