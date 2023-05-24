@@ -112,13 +112,22 @@ void setup() {
   // allow reuse (if server supports it)
   https.setReuse(true);
 
-  setClock();  
+  setClock(); 
+
+  EasyBuzzer.setPin(BUZZER_PIN);
   
 }
 
 void loop() {
+  // Buzzer alarm sequence
+  EasyBuzzer.update();
+  EasyBuzzer.stopBeep();
+  if (smoke_read >= 0 && smoke_read <= 2) {
+    /* Beep at a given frequency for 100 times. */
+    EasyBuzzer.beep(1000);
+  }
   Serial.print("[HTTPS] begin...\n");
-  if (https.begin(client, "https://hascion-deno-test.deno.dev/sensors")) {  // HTTPS
+  if (https.begin(client, "https://smoketrace-api.deno.dev/sensors")) {  // HTTPS
     Serial.print("[HTTPS] POST...\n");
     // payload
     // Calibrate time to nearest 10 seconds
@@ -128,14 +137,6 @@ void loop() {
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = https.POST(buffer);
-    if (smoke_read >= 0 && smoke_read <= 2) {
-      /* Beep at a given frequency for specific number of times. */
-	    EasyBuzzer.beep(1000, 10);
-    }
-    else {
-      EasyBuzzer.stopBeep();
-    }
-    EasyBuzzer.update();
     smoke_read++; // temporary smoke_read for debugs
     // httpCode will be negative on error
     if (httpCode > 0) {
