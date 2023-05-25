@@ -3,25 +3,13 @@
 	<meta name="description" content="View smoke readings on a graph" />
 </svelte:head>
 
-
-
-
-
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { fetchFromAPI } from '$lib/helpers/fetch'
 
   let sensor_data: any = {}
 
-	// code for fetching from api
-	let api_url = "https://smoketrace-api.deno.dev/sensors/ESP32_JOHN"
-  onMount(() => {
-    fetch(api_url)
-      .then(response => response.json())
-      .then(result => {
-				console.log(result);
-				sensor_data = result
-			})
-  })
+  onMount(() => {sensor_data = fetchFromAPI()})
 
 	// dummy data, for testing
 	sensor_data = [
@@ -77,7 +65,7 @@
   }
 ]
 
-
+  console.log(sensor_data);
 
 </script>
 
