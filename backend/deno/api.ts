@@ -17,6 +17,10 @@ type sensorData = {
 const GREEN = 0;
 const ORANGE = 1;
 const RED = 2;
+const BLACK = 3;
+
+// Define smoke tolerance
+const SMOKE_TOLERANCE = 150;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
@@ -90,16 +94,22 @@ router
             clearTimeout(device_timer); // Deactivate timer set with timeout handler identifier stored in the device map
         }
 
-        // Create timeout handler for the logged device
-        const timeout_handler = setTimeout(() => {
-            devices.get(device_id).status = ORANGE; // If the timer expires, set the device status to ORANGE
+        // Create timeout handler for the logged device, if device status is GREEN
+        const timeout_handler = setTimeout(() => { // Set timeout handler
+            (devices.get(device_id).status == RED // Check last device status
+                ? devices.get(device_id).status = BLACK // Transition to BLACK status if the last status is RED after timeout
+                : devices.get(device_id).status = ORANGE // Else, just transition to ORANGE status
+            ); // If the timer expires, set the device status to ORANGE 
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
         }, 15000); // Set timeout for 15 seconds
 
+        // Set current status based on smoke_read
+        (smoke_read >= SMOKE_TOLERANCE ? const status = RED : const status = GREEN);
+
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
-            status: GREEN, // Set status to GREEN upon receiving the POST request
+            status, // Set status to GREEN upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
             last_alive: time, // Set last_alive to received time
             timeout_handler, // Store the timeout handler for the current device
