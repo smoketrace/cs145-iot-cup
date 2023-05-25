@@ -97,15 +97,15 @@ router
         // Create timeout handler for the logged device, if device status is GREEN
         const timeout_handler = setTimeout(() => { // Set timeout handler
             (devices.get(device_id).status == RED // Check last device status
-                ? devices.get(device_id).status = BLACK // Transition to BLACK status if the last status is RED after timeout
-                : devices.get(device_id).status = ORANGE // Else, just transition to ORANGE status
+                ? (devices.get(device_id).status = BLACK) // Transition to BLACK status if the last status is RED after timeout
+                : (devices.get(device_id).status = ORANGE) // Else, just transition to ORANGE status
             ); // If the timer expires, set the device status to ORANGE 
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
         }, 15000); // Set timeout for 15 seconds
 
         // Set current status based on smoke_read
-        (smoke_read >= SMOKE_TOLERANCE ? const status = RED : const status = GREEN);
+        const status = smoke_read >= SMOKE_TOLERANCE ? RED : GREEN;
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
@@ -117,7 +117,8 @@ router
 
         // Update device information of the device in the device map
         devices.set(device_id, device_info); // Set timeout for 15 seconds
-        //console.log(devices.get(device_id));
+        // console.log("RECENT POST DEVICE INFO:");
+        // console.log(devices.get(device_id));
 
         // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
         if (!device_id || !time) {
