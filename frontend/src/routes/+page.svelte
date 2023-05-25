@@ -10,7 +10,7 @@
 <section>
 		<span class="frontpage"> 
 			<picture>
-				<source srcset={textlogo} type="image/webp" />
+				<source srcset={textlogo} type="image/svg" />
 				<img src={textlogo} alt="SmokeTrace text logo" />
 			</picture>
 		</span>
