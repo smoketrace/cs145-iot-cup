@@ -11,72 +11,66 @@
   import { onMount } from 'svelte';
   import { fetchFromAPI } from '$lib/helpers/fetch'
   import sensor_dummy from './../../lib/sensor_dummy.json';
+  import { graphSensorData } from '$lib/helpers/graph';
 
   Chart.register(...registerables);
  
   let lineGraph: HTMLCanvasElement;
-
   let sensor_data: any = {}
 
-  // parsing json
-  const labels = sensor_dummy.map(obj => obj.time);
-  const data = sensor_dummy.map(obj => obj.smoke_read);
 
-  const result = {
-    labels: labels,
-    data: data
+  type SensorReadingType = {
+    device_id: string;
+    time: string;
+    smoke_read: number;
   };
 
-  console.log("parsed json", result);
+  function parseSensorData(sensorData: SensorReadingType[]) {
+    // parsing json
+    const labels = sensorData.map(obj => obj.time);
+    const data = sensorData.map(obj => obj.smoke_read);
 
+    const result = {
+      labels: labels,
+      data: data
+    };
+    console.log("parsed json", result);
 
-  // parsing json
+    return result
+  }
 
-
-  onMount(() => {
-    function parseSensorValue() {
-      
+  // parsing json data to graph data
+  function formatGraphData(sensorData: SensorReadingType[]) {
+    let {labels, data} = parseSensorData(sensorData)
+    let graphData = {
+      labels: labels, 
+      datasets: [
+        {
+          // TODO: label should be sensor name
+          label: "sensor 1",
+          data: data,
+          backgroundColor: 'blue'
+        },
+      ]
     }
+    return graphData
+  }
 
-    
-    console.log("sensor_dummy_data", sensor_dummy);
-    
+  
 
+  onMount(() => { 
+  
     // // fetching from api
     fetchFromAPI()
       .then(data => {
         console.log('Data', data);
-        // parsejson here
+        // TODO: parsejson here
       })
       .catch(error => {
         console.error('Error:', error);
       })
 
-    function parseSensorData() {
-
-    }
-    
-    
-
-    // parsing json data to be used as graph
-    //  what if only 1 data set (only 1 color)
-    let graphData = {
-      labels: labels, 
-      datasets: [
-        {
-          label: "sensor 1",
-          data: data,
-          backgroundColor: 'blue'
-        },
-        // {
-        //   label: "Profit",
-        //   data: ['542', '542', '536', '327', '17',
-        //         '0.00', '538', '541'],
-        //   backgroundColor: 'limegreen'
-        // }  
-      ]
-    }
-
+  let graphData = formatGraphData(sensor_dummy)
 
   // creating the graph
   new Chart(lineGraph, {
@@ -86,10 +80,8 @@
       aspectRatio:2.5
     }
   })
-
-      
+  
 })
-
 
 
 </script>
