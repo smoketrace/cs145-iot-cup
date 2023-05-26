@@ -13,81 +13,44 @@
 
   Chart.register(...registerables);
  
-   let barChartElement: HTMLCanvasElement;
- 
-   const chartData = {
-     labels: satisfactionData2021.map(({ framework }) => framework),
-     datasets: [
-       {
-         label: 'Satisfaction (%)',
-         data: satisfactionData2021.map(({ score }) => score),
-         backgroundColor: [
-           'hsl(347 38% 49%)',
-           'hsl(346 65% 63%)',
-           'hsl(346 49% 56%)',
-           'hsl(346 89% 70%)',
-           'hsl(346 90% 76%)',
-           'hsl(346 90% 73%)',
-           'hsl(346 89% 79%)',
-           'hsl(346 89% 85%)',
-           'hsl(347 89% 82%)',
-           'hsl(346 90% 88%)',
-           'hsl(347 87% 94%)',
-           'hsl(347 91% 91%)',
-           'hsl(346 87% 97%)',
-         ],
-         borderColor: ['hsl(43 100% 52%)'],
-         borderRadius: 4,
-         borderWidth: 2,
-       },
-     ],
-   };
-  
+  let barChartElement: HTMLCanvasElement;
+  let lineGraph: HTMLCanvasElement;
 
   let sensor_data: any = {}
 
-	// code for fetching from api
-	let api_url = "https://smoketrace-api.deno.dev/sensors/ESP32_JOHN"
   onMount(() => {
+    // fetching from api
     sensor_data = fetchFromAPI()
-  
 
-  new Chart(barChartElement, {
-    type: 'bar',
-    data: chartData,
-    options: {
-      plugins: {
-        legend: {
-          display: false,
+  new Chart(lineGraph, {
+    type: 'line', //this denotes tha type of chart
+
+    data: {// values on X-Axis
+      labels: ['2022-05-10', '2022-05-11', '2022-05-12','2022-05-13',
+              '2022-05-14', '2022-05-15', '2022-05-16','2022-05-17', ], 
+      datasets: [
+        {
+          label: "Sales",
+          data: ['467','576', '572', '79', '92',
+              '574', '573', '576'],
+          backgroundColor: 'blue'
         },
-      },
-      scales: {
-        x: {
-          grid: {
-            color: 'hsl(43 100% 52% / 10%)',
-          },
-          ticks: { color: 'hsl(43 100% 52% )' },
-        },
-        y: {
-          beginAtZero: false,
-          ticks: { color: 'hsl(43 100% 52% )', font: { size: 18 } },
-          grid: {
-            color: 'hsl(43 100% 52% / 40%)',
-          },
-          title: {
-            display: true,
-            text: 'Satisfaction (%)',
-            color: 'hsl(43 100% 52% )',
-            font: { size: 24, family: 'Merriweather' },
-          },
-        },
-      },
+        {
+          label: "Profit",
+          data: ['542', '542', '536', '327', '17',
+                '0.00', '538', '541'],
+          backgroundColor: 'limegreen'
+        }  
+      ]
     },
-  });
-
+    options: {
+      aspectRatio:2.5
+    }
+  }
+  )
 
       
-  })
+})
 
 
 
@@ -100,4 +63,5 @@
 		[View smoke readings on a graph]
 	</p>
   <canvas bind:this={barChartElement} />
+  <canvas bind:this={lineGraph} />
 </div>
