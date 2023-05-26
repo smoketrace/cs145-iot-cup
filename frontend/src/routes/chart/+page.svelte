@@ -24,23 +24,11 @@
     smoke_read: number;
   };
 
-  // parsing sensor data for easier graphing
-  function parseSensorData(sensorData: SensorReadingType[]) {
+  // parsing json data to graph data
+  function formatGraphData(sensorData: SensorReadingType[]) {
     const labels = sensorData.map(obj => obj.time);
     const data = sensorData.map(obj => obj.smoke_read);
 
-    const result = {
-      labels: labels,
-      data: data
-    };
-    console.log("parsed json", result);
-
-    return result
-  }
-
-  // parsing json data to graph data
-  function formatGraphData(sensorData: SensorReadingType[]) {
-    let {labels, data} = parseSensorData(sensorData)
     let graphData = {
       labels: labels, 
       datasets: [
