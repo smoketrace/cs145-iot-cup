@@ -4,68 +4,92 @@
 </svelte:head>
 
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { browser } from '$app/environment';
+  import { FY2021 as satisfactionData2021 } from '$lib/data.satisfaction.json';
+  import '@fontsource/merriweather';
+  import { Chart, registerables } from 'chart.js';
+  import { onMount } from 'svelte';
   import { fetchFromAPI } from '$lib/helpers/fetch'
+
+  Chart.register(...registerables);
+ 
+   let barChartElement: HTMLCanvasElement;
+ 
+   const chartData = {
+     labels: satisfactionData2021.map(({ framework }) => framework),
+     datasets: [
+       {
+         label: 'Satisfaction (%)',
+         data: satisfactionData2021.map(({ score }) => score),
+         backgroundColor: [
+           'hsl(347 38% 49%)',
+           'hsl(346 65% 63%)',
+           'hsl(346 49% 56%)',
+           'hsl(346 89% 70%)',
+           'hsl(346 90% 76%)',
+           'hsl(346 90% 73%)',
+           'hsl(346 89% 79%)',
+           'hsl(346 89% 85%)',
+           'hsl(347 89% 82%)',
+           'hsl(346 90% 88%)',
+           'hsl(347 87% 94%)',
+           'hsl(347 91% 91%)',
+           'hsl(346 87% 97%)',
+         ],
+         borderColor: ['hsl(43 100% 52%)'],
+         borderRadius: 4,
+         borderWidth: 2,
+       },
+     ],
+   };
+  
 
   let sensor_data: any = {}
 
-  onMount(() => {sensor_data = fetchFromAPI()})
+	// code for fetching from api
+	let api_url = "https://smoketrace-api.deno.dev/sensors/ESP32_JOHN"
+  onMount(() => {
+    sensor_data = fetchFromAPI()
+  
 
-	// dummy data, for testing
-	sensor_data = [
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T10:30:00Z",
-    "smoke_read": 42
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T11:15:00Z",
-    "smoke_read": 18
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T13:45:00Z",
-    "smoke_read": 29
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T14:20:00Z",
-    "smoke_read": 36
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T15:05:00Z",
-    "smoke_read": 12
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T16:30:00Z",
-    "smoke_read": 25
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T17:15:00Z",
-    "smoke_read": 31
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T18:45:00Z",
-    "smoke_read": 19
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T19:10:00Z",
-    "smoke_read": 27
-  },
-  {
-    "device_id": "hello",
-    "time": "2023-05-25T20:25:00Z",
-    "smoke_read": 14
-  }
-]
+  new Chart(barChartElement, {
+    type: 'bar',
+    data: chartData,
+    options: {
+      plugins: {
+        legend: {
+          display: false,
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'hsl(43 100% 52% / 10%)',
+          },
+          ticks: { color: 'hsl(43 100% 52% )' },
+        },
+        y: {
+          beginAtZero: false,
+          ticks: { color: 'hsl(43 100% 52% )', font: { size: 18 } },
+          grid: {
+            color: 'hsl(43 100% 52% / 40%)',
+          },
+          title: {
+            display: true,
+            text: 'Satisfaction (%)',
+            color: 'hsl(43 100% 52% )',
+            font: { size: 24, family: 'Merriweather' },
+          },
+        },
+      },
+    },
+  });
 
-  console.log(sensor_data);
+
+      
+  })
+
+
 
 </script>
 
@@ -75,4 +99,5 @@
 	<p>
 		[View smoke readings on a graph]
 	</p>
+  <canvas bind:this={barChartElement} />
 </div>
