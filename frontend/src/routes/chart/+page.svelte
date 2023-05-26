@@ -16,7 +16,6 @@
   Chart.register(...registerables);
  
   let lineGraph: HTMLCanvasElement;
-  let sensor_data: any = {}
 
 
   type SensorReadingType = {
@@ -25,8 +24,8 @@
     smoke_read: number;
   };
 
+  // parsing sensor data for easier graphing
   function parseSensorData(sensorData: SensorReadingType[]) {
-    // parsing json
     const labels = sensorData.map(obj => obj.time);
     const data = sensorData.map(obj => obj.smoke_read);
 
@@ -62,24 +61,26 @@
   
     // // fetching from api
     fetchFromAPI()
-      .then(data => {
-        console.log('Data', data);
-        // TODO: parsejson here
+      .then((data) => {
+        return formatGraphData(data)
+      })
+      .then(graphData => {
+
+        // creating the graph
+        new Chart(lineGraph, {
+          type: 'line', //this denotes the type of chart
+          data: graphData,
+          options: {
+            aspectRatio:2.5
+          }
+        })
       })
       .catch(error => {
         console.error('Error:', error);
       })
 
-  let graphData = formatGraphData(sensor_dummy)
 
-  // creating the graph
-  new Chart(lineGraph, {
-    type: 'line', //this denotes tha type of chart
-    data: graphData,
-    options: {
-      aspectRatio:2.5
-    }
-  })
+
   
 })
 
