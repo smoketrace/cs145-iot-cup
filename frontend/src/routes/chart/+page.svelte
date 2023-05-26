@@ -10,7 +10,7 @@
   import { Chart, registerables } from 'chart.js';
   import { onMount } from 'svelte';
   import { fetchFromAPI } from '$lib/helpers/fetch'
-
+  import sensor_dummy from './../../lib/sensor_dummy.json';
 
   Chart.register(...registerables);
  
@@ -18,10 +18,29 @@
 
   let sensor_data: any = {}
 
+  // parsing json
+  const labels = sensor_dummy.map(obj => obj.time);
+  const data = sensor_dummy.map(obj => obj.smoke_read);
+
+  const result = {
+    labels: labels,
+    data: data
+  };
+
+  console.log("parsed json", result);
+
+
+  // parsing json
+
+
   onMount(() => {
     function parseSensorValue() {
       
     }
+
+    
+    console.log("sensor_dummy_data", sensor_dummy);
+    
 
     // // fetching from api
     fetchFromAPI()
@@ -42,21 +61,19 @@
     // parsing json data to be used as graph
     //  what if only 1 data set (only 1 color)
     let graphData = {
-      labels: ['2022-05-10', '2022-05-11', '2022-05-12','2022-05-13',
-              '2022-05-14', '2022-05-15', '2022-05-16','2022-05-17', ], 
+      labels: labels, 
       datasets: [
         {
-          label: "Sales",
-          data: ['467','576', '572', '79', '92',
-              '574', '573', '576'],
+          label: "sensor 1",
+          data: data,
           backgroundColor: 'blue'
         },
-        {
-          label: "Profit",
-          data: ['542', '542', '536', '327', '17',
-                '0.00', '538', '541'],
-          backgroundColor: 'limegreen'
-        }  
+        // {
+        //   label: "Profit",
+        //   data: ['542', '542', '536', '327', '17',
+        //         '0.00', '538', '541'],
+        //   backgroundColor: 'limegreen'
+        // }  
       ]
     }
 

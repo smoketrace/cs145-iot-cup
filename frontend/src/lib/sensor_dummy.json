@@ -1,5 +1,4 @@
-{
-	"sensor_data" : [
+[
     {
       "device_id": "hello",
       "time": "2023-05-25T10:30:00Z",
@@ -51,4 +50,3 @@
       "smoke_read": 14
     }
   ]
-}
