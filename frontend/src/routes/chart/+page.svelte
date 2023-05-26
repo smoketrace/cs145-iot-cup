@@ -50,7 +50,7 @@
     // // fetching from api
     fetchFromAPI()
       .then((data) => {
-        return formatGraphData(data)
+        return formatGraphData(data as SensorReadingType[])
       })
       .then(graphData => {
 
