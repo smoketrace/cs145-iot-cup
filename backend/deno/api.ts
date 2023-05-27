@@ -2,7 +2,7 @@ import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.t
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { collection, getFirestore, addDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
-import { TwilioSMS, SMSRequest } from './twilioSMS.ts';
+import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
@@ -42,7 +42,8 @@ type deviceInfo = {
     status: number; // Perceived status of the device
     last_read: number; // Last smoke_read of the device
     last_alive: string; // Last time the device sent a POST message to the server
-    timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device
+    status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
+    sms_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the SMS service
 };
 
 // Dictionary to store device timers
@@ -105,12 +106,12 @@ router
         
         // Refresh timer for device_id if the device already exists in the device map
         if (devices.has(device_id)){ // If the device ID already exists in the device map
-            const device_timer: ReturnType<typeof setTimeout> = devices.get(device_id).timeout_handler; // Obtain the timeout handler identifier stored in the device map
+            const device_timer: ReturnType<typeof setTimeout> = devices.get(device_id).status_timeout_handler; // Obtain the timeout handler identifier stored in the device map
             clearTimeout(device_timer); // Deactivate timer set with timeout handler identifier stored in the device map
         }
 
-        // Create timeout handler for the logged device, if device status is GREEN
-        const timeout_handler = setTimeout(() => { // Set timeout handler
+        // Create timeout handler for ORANGE/BLACK device status, if device status is currently GREEN/RED
+        const status_timeout_handler = setTimeout(() => { // Set timeout handler
             (devices.get(device_id).status == RED // Check last device status
                 ? (devices.get(device_id).status = BLACK) // Transition to BLACK status if the last status is RED after timeout
                 : (devices.get(device_id).status = ORANGE) // Else, just transition to ORANGE status
@@ -127,7 +128,8 @@ router
             status, // Set status to GREEN upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
             last_alive: time, // Set last_alive to received time
-            timeout_handler, // Store the timeout handler for the current device
+            status_timeout_handler, // Store the timeout handler for the device status
+            sms_timeout_handler, // Store the timeout handler for the SMS service
         };
 
         // Update device information of the device in the device map
