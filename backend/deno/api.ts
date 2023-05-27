@@ -22,6 +22,16 @@ const phoneNumber: string = <string>(
   Deno.env.get('TWILIO_PHONE_NUMBER')
 );
 
+// Create helper variable for Twilio SMS service
+const helper = new TwilioSMS(accountSid, keySid, secret);
+
+// Setup SMS message body
+const message: SMSRequest = {
+  From: phoneNumber,
+  To: '+15005550001', // test destination
+};
+
+// Add type to contain sensor data from ESP32
 type sensorData = {
     device_id: string;
     smoke_read: number;
@@ -122,6 +132,29 @@ router
 
         // Set current status based on smoke_read
         const status = smoke_read >= SMOKE_TOLERANCE ? RED : GREEN;
+
+        // Obtain previous sms_timeout_handler from the device map
+        const sms_timeout_handler = devices.get(device_id).sms_timeout_handler;
+
+        // Create timeout handler for the SMS service
+        switch(status){
+            case RED: // Send status-based SMS for RED device status
+                (sms_timeout_handler == NONE
+                    ? sms_timeout_handler = setTimeout(() => { // Set timeout handler
+                        message.body = "<device_id> has a HIGH reading for 15s already.";
+                        helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
+                        console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
+                    }, 15000) // Set timeout for 15 seconds
+                    : null // if timeout already exists, don't change the timer
+                );
+                break;
+            case GREEN: // Abort SMS sending timeout if status is GREEN
+                (sms_timeout_handler == NONE
+                    ? null // if timeout is NONE, keep it as-is
+                    : clearTimeout(sms_timeout_handler) // clear timeout if device is already GREEN
+                );
+                break;
+        }
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
