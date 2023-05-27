@@ -2,10 +2,25 @@ import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.t
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { collection, getFirestore, addDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
+import { TwilioSMS, SMSRequest } from './twilioSMS.ts';
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
+
+// Twilio SMS Credentials
+const accountSid: string = <string>(
+  Deno.env.get('TWILIO_ACCOUNT_SID')
+);
+const keySid: string = <string>(
+  Deno.env.get('TWILIO_API_KEY')
+);
+const secret: string = <string>(
+  Deno.env.get('TWILIO_API_SECRET')
+);
+const phoneNumber: string = <string>(
+  Deno.env.get('TWILIO_PHONE_NUMBER')
+);
 
 type sensorData = {
     device_id: string;
