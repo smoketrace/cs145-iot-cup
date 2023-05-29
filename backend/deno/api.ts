@@ -18,8 +18,11 @@ const keySid: string = <string>(
 const secret: string = <string>(
   Deno.env.get('TWILIO_API_SECRET')
 );
-const phoneNumber: string = <string>(
-  Deno.env.get('TWILIO_PHONE_NUMBER')
+const fromPhoneNumber: string = <string>(
+  Deno.env.get('TWILIO_FROM_PHONE_NUMBER')
+);
+const toPhoneNumber: string = <string>(
+  Deno.env.get('TWILIO_TO_PHONE_NUMBER')
 );
 
 // Create helper variable for Twilio SMS service
@@ -27,8 +30,8 @@ const helper = new TwilioSMS(accountSid, keySid, secret);
 
 // Setup SMS message body
 const message: SMSRequest = {
-  From: phoneNumber,
-  To: '+15005550001', // test destination
+  From: fromPhoneNumber,
+  To: toPhoneNumber, // test destination
   Body: '', // Initialize string for body
 };
 
