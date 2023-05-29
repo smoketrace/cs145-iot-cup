@@ -29,6 +29,7 @@ const helper = new TwilioSMS(accountSid, keySid, secret);
 const message: SMSRequest = {
   From: phoneNumber,
   To: '+15005550001', // test destination
+  Body: '', // Initialize string for body
 };
 
 // Add type to contain sensor data from ESP32
