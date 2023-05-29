@@ -54,7 +54,7 @@ type deviceInfo = {
     last_alive: string; // Last time the device sent a POST message to the server
     status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
     sms_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the SMS service
-    sms_timeout_running: bool; // Check if the SMS timeout handler is running
+    sms_timeout_running: boolean; // Check if the SMS timeout handler is running
 };
 
 // Dictionary to store device timers
