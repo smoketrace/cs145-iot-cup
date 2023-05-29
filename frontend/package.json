@@ -9,13 +9,13 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
-		"@fontsource/merriweather": "^5.0.1",
 		"@fontsource/fira-mono": "^4.5.10",
+		"@fontsource/merriweather": "^5.0.1",
 		"@neoconfetti/svelte": "^1.0.0",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.5.0",
-		"@types/cookie": "^0.5.1",
 		"@types/chart.js": "^2.9.37",
+		"@types/cookie": "^0.5.1",
 		"chart.js": "^4.3.0",
 		"svelte": "^3.54.0",
 		"svelte-adapter-deno": "^0.9.0",
@@ -24,5 +24,9 @@
 		"typescript": "^5.0.0",
 		"vite": "^4.3.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"firebase": "^9.22.1",
+		"sveltefire": "^0.2.3"
+	}
 }

@@ -8,7 +8,7 @@
 	import { fetchFromAPI } from "$lib/helpers/fetch";
 
 	let sensor_data: any = {}
-	onMount(() => {sensor_data = fetchFromAPI()})
+	// onMount(() => {sensor_data = fetchFromAPI()})
 </script>
 
 <div>
