@@ -43,34 +43,28 @@
     return graphData
   }
 
+  onMount(() => { 
   
-
-//   onMount(() => { 
-  
-    // // fetching from api
-    // fetchFromAPI()
-    //   .then((data) => {
-    //     return formatGraphData(data)
-    //   })
-    //   .then(graphData => {
+    // fetching from api
+    fetchFromAPI()
+      .then((data) => {
+        return formatGraphData(data)
+      })
+      .then(graphData => {
 
         // creating the graph
-    //     new Chart(lineGraph, {
-    //       type: 'line', //this denotes the type of chart
-    //       data: graphData,
-    //       options: {
-    //         aspectRatio:2.5
-    //       }
-    //     })
-    //   })
-    //   .catch(error => {
-    //     console.error('Error:', error);
-    //   })
-
-
-
-  
-// })
+        new Chart(lineGraph, {
+          type: 'line', //this denotes the type of chart
+          data: graphData,
+          options: {
+            aspectRatio:2.5
+          }
+        })
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+})
 
 
 </script>

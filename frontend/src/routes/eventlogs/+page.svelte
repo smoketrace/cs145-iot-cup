@@ -6,9 +6,10 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fetchFromAPI } from "$lib/helpers/fetch";
-
-	let sensor_data: any = {}
-	// onMount(() => {sensor_data = fetchFromAPI()})
+    
+	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
+    import { auth } from "$lib/firebase";
+    import { firestore } from "$lib/firebase";
 </script>
 
 <div>
@@ -17,4 +18,20 @@
 	<p>
 		[Contains significant smoke readings and sensor health reports]
 	</p>
+
+    <FirebaseApp {auth} {firestore}>
+        <Collection
+            ref="sensorData"
+            let:data
+            let:ref
+        >
+            {#each data as smokeReading}
+                {#if smokeReading.smoke_read > 0}
+                    {smokeReading.time} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
+                    <hr>
+                {/if}
+            {/each}
+            
+        </Collection>
+    </FirebaseApp>
 </div>
