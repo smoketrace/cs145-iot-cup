@@ -34,7 +34,7 @@ const char* rootCACertificate = \
 "-----END CERTIFICATE-----\n";
 
 // Initialize smoke_read for smoke readings
-int smoke_read = 0;
+int smoke_read;
 
 // Setup WiFiMulti variable for scanning WiFi access points
 WiFiMulti WiFiMulti;
@@ -89,9 +89,14 @@ void setup() {
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
+  // Set the resolution to 12 bits (0-4096)
+  analogReadResolution(12);
+
   Serial.println();
   Serial.println();
   Serial.println();
+
+  smoke_read = analogRead(4);
 
   WiFi.mode(WIFI_STA);
   // WiFiMulti.addAP("Proposal", "approved");
@@ -121,10 +126,13 @@ void setup() {
 void loop() {
   // Buzzer alarm sequence
   EasyBuzzer.update();
-  EasyBuzzer.stopBeep();
-  if (smoke_read >= 0 && smoke_read <= 2) {
+  if (smoke_read >= 150) {
     /* Beep at a given frequency for 100 times. */
     EasyBuzzer.beep(1000);
+  }
+  else {
+    /* Stop beeping if smoke_read is low */
+    EasyBuzzer.stopBeep();
   }
   Serial.print("[HTTPS] begin...\n");
   if (https.begin(client, "https://smoketrace-api.deno.dev/sensors")) {  // HTTPS
@@ -137,7 +145,6 @@ void loop() {
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = https.POST(buffer);
-    smoke_read++; // temporary smoke_read for debugs
     // httpCode will be negative on error
     if (httpCode > 0) {
       // HTTP header has been send and Server response header has been handled
