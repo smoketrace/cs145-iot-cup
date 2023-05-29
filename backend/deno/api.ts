@@ -28,13 +28,6 @@ const toPhoneNumber: string = <string>(
 // Create helper variable for Twilio SMS service
 const helper = new TwilioSMS(accountSid, keySid, secret);
 
-// Setup SMS message body
-const message: SMSRequest = {
-  From: fromPhoneNumber,
-  To: toPhoneNumber, // test destination
-  Body: '', // Initialize string for body
-};
-
 // Add type to contain sensor data from ESP32
 type sensorData = {
     device_id: string;
@@ -152,7 +145,11 @@ router
             case RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
                     sms_timeout_handler = setTimeout(() => { // Set timeout handler
-                        message.body = "<device_id> has a HIGH reading for 15s already.";
+                        const message: SMSRequest = {
+                            From: fromPhoneNumber,
+                            To: toPhoneNumber,
+                            Body: `${device_id} has a HIGH reading for 15s already.`, // Initialize string for body
+                        };
                         helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
