@@ -167,7 +167,7 @@ router
         }
 
         // create timestamp type data from obtained time value from ESP32
-        const timestamp = Timestamp.fromDate(new Date(time));
+        const timestamp = Timestamp.fromDate(new Date(time * 1000));
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
