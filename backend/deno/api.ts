@@ -3,7 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebas
 import { collection, getFirestore, addDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
-import { Token } from "https://deno.land/x/path_to_regexp@v6.2.1/index.ts";
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
