@@ -71,13 +71,6 @@ void setClock() {
   Serial.print(curr_time);
 }
 
-char * getTime() {
-  time_t raw_time = time(nullptr);
-  char * ret_time = ctime(&raw_time);
-  ret_time[strlen(ret_time)-1] = '\0';
-  return ret_time;
-}
-
 int time_offset() {
   time_t raw_time = time(nullptr);
   struct tm * curr_time = localtime(&raw_time);
@@ -140,8 +133,7 @@ void loop() {
     // payload
     // Calibrate time to nearest 10 seconds
     delay(time_offset());
-    curr_time = getTime();
-    sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": \"%s\"}", smoke_read, curr_time);
+    sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": %d}", smoke_read, time(nullptr));
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = https.POST(buffer);
