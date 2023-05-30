@@ -1,8 +1,9 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { collection, getFirestore, addDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { collection, getFirestore, addDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
+import { Token } from "https://deno.land/x/path_to_regexp@v6.2.1/index.ts";
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
@@ -32,7 +33,7 @@ const helper = new TwilioSMS(accountSid, keySid, secret);
 type sensorData = {
     device_id: string;
     smoke_read: number;
-    time: string;
+    time: Timestamp;
 };
 
 // Define status constants for deviceInfo type
@@ -48,7 +49,7 @@ const SMOKE_TOLERANCE = 150;
 type deviceInfo = {
     status: number; // Perceived status of the device
     last_read: number; // Last smoke_read of the device
-    last_alive: string; // Last time the device sent a POST message to the server
+    last_alive: Timestamp; // Last time the device sent a POST message to the server
     status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
     sms_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the SMS service
     sms_timeout_running: boolean; // Check if the SMS timeout handler is running
@@ -166,11 +167,14 @@ router
                 break;
         }
 
+        // create timestamp type data from obtained time value from ESP32
+        const timestamp = Timestamp.fromDate(new Date(time));
+
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
             status, // Set status to GREEN upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
-            last_alive: time, // Set last_alive to received time
+            last_alive: timestamp, // Set last_alive to received time
             status_timeout_handler, // Store the timeout handler for the device status
             sms_timeout_handler, // Store the timeout handler for the SMS service
             sms_timeout_running, // Store the variable that checks if the SMS timeout handler is running
@@ -187,12 +191,11 @@ router
             context.response.status = 400;
             return;
         }
-
         // creating new sensor data
         const newSensorData: sensorData = {
             device_id,
             smoke_read,
-            time,
+            time: timestamp,
         };
 
         await addDoc(collection(db, 'sensorData'), newSensorData);
