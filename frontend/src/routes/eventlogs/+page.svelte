@@ -10,6 +10,8 @@
 	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
     import { auth } from "$lib/firebase";
     import { firestore } from "$lib/firebase";
+
+    // const sensorData = collectionStore(firestore, "sensorData");
 </script>
 
 <div>
@@ -27,7 +29,7 @@
         >
             {#each data as smokeReading}
                 {#if smokeReading.smoke_read > 0}
-                    {smokeReading.time} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
+                    {new Date((smokeReading.time.seconds)*1000).toLocaleString()} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
                     <hr>
                 {/if}
             {/each}
