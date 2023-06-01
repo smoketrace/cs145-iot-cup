@@ -17,17 +17,23 @@
  
   let lineGraph: HTMLCanvasElement;
 
+  type Time = {
+    seconds: number;
+    nanoseconds: number;
+  }
 
   type SensorReadingType = {
     device_id: string;
-    time: string;
+    time: Time;
     smoke_read: number;
   };
 
   // parsing json data to graph data
   function formatGraphData(sensorData: SensorReadingType[]) {
-    const labels = sensorData.map(obj => obj.time);
+    const labels = sensorData.map(obj => obj.time['seconds']);
     const data = sensorData.map(obj => obj.smoke_read);
+
+    
 
     let graphData = {
       labels: labels, 
