@@ -37,7 +37,12 @@
     <Graph/>
   {/if}
 
-  <button on:click={() => isMounted = !isMounted}>
+  <button on:click={() => {
+    isMounted = !isMounted
+    setTimeout(() => {
+      isMounted = !isMounted
+    }, 200);
+  }}>
     {#if isMounted}Destroy{/if}
     {#if !isMounted}Remount{/if}
   </button>
