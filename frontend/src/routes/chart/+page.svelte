@@ -4,12 +4,25 @@
 </svelte:head>
 
 <script lang="ts">
+  import Graph from '../../lib/components/Graph.svelte';
+  import { onMount, onDestroy, setContext } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
+  let isMounted = false;
 
-import Graph from '../../lib/components/Graph.svelte';
+  onMount(() => {
+    console.log("Mounted");
+    isMounted = true;
+  });
 
+  onDestroy(() => {
+    isMounted = false;
+  });
 
+  setContext('isMounted', isMounted);
+  
 </script>
+
 
 <div>
 	<h1>Smoke Chart</h1>
@@ -18,6 +31,16 @@ import Graph from '../../lib/components/Graph.svelte';
 		[Add button to refresh graph]
 	</p>
   
-  <Graph/>
+
+  <!-- remount logic -->
+  {#if isMounted}
+    <Graph/>
+  {/if}
+
+  <button on:click={() => isMounted = !isMounted}>
+    {#if isMounted}Destroy{/if}
+    {#if !isMounted}Remount{/if}
+  </button>
+
 </div>
 

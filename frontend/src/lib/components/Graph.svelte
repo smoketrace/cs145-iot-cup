@@ -3,7 +3,7 @@
   import { FY2021 as satisfactionData2021 } from '$lib/data.satisfaction.json';
   import '@fontsource/merriweather';
   import { Chart, registerables } from 'chart.js';
-  import { onMount } from 'svelte';
+  import { onMount, afterUpdate } from 'svelte';
   import { fetchFromAPI } from '$lib/helpers/fetch'
   import sensor_dummy from './../../lib/sensor_dummy.json';
   import { graphSensorData } from '$lib/helpers/graph';
@@ -11,8 +11,7 @@
   Chart.register(...registerables);
  
   let lineGraph: HTMLCanvasElement;
-
-  let key = 0;
+  export let key = 0;
   
   function reloadGraph() {
     key += 1;
@@ -52,7 +51,7 @@
   
 
   onMount(() => { 
-  
+    console.log("component mounted");
     // // fetching from api
     fetchFromAPI()
       .then((data) => {
@@ -72,16 +71,11 @@
       .catch(error => {
         console.error('Error:', error);
       })
-
-
-
-  
-})
-
+  })
 
 </script>
 
 
-<div>
+<div> 
   <canvas bind:this={lineGraph} />
 </div>
