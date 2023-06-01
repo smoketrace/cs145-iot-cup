@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "prettier": "2.8.8"
+  },
+  "dependencies": {
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^2.30.0"
+  }
+}
