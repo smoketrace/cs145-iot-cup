@@ -26,15 +26,20 @@
         <Collection
             ref={sortEntriesByTime}
             let:data
-            let:ref
+            let:count
         >
-            {#each data as smokeReading}
-                {#if smokeReading.smoke_read > 0}
-                    {new Date((smokeReading.time.seconds)*1000).toLocaleString()} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
-                    <hr>
-                {/if}
-            {/each}
-            
+            {#if count == 0}
+                <span>Fetching data...</span>
+            {:else}
+                <p>Showing {count} entries (in the future, allow view entries from the past hour, day, week)</p>
+                {#each data as smokeReading}
+                    {#if smokeReading.smoke_read > 0}
+                        {new Date((smokeReading.time.seconds)*1000).toLocaleString()} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
+                        <hr>
+                    {/if}
+                {/each}
+            {/if}
+            <span slot="loading">Fetching data...</span>
         </Collection>
     </FirebaseApp>
 </div>
