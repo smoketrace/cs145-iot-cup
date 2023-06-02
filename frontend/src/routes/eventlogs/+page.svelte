@@ -7,11 +7,12 @@
 	import { onMount } from "svelte";
 	import { fetchFromAPI } from "$lib/helpers/fetch";
     
+    import { collection, query, orderBy, where } from "firebase/firestore";
 	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
     import { auth } from "$lib/firebase";
     import { firestore } from "$lib/firebase";
 
-    // const sensorData = collectionStore(firestore, "sensorData");
+    const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'));
 </script>
 
 <div>
@@ -23,7 +24,7 @@
 
     <FirebaseApp {auth} {firestore}>
         <Collection
-            ref="sensorData"
+            ref={sortEntriesByTime}
             let:data
             let:ref
         >
