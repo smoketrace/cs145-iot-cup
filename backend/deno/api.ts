@@ -1,6 +1,6 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { collection, getFirestore, addDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { collection, getFirestore, getDoc, addDoc, updateDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
@@ -33,6 +33,12 @@ type sensorData = {
     device_id: string;
     smoke_read: number;
     time: Timestamp;
+};
+
+// Add type to contain phone directory data from website
+type phoneDirectoryData = {
+    phone: string;
+    name: string;
 };
 
 // Define status constants for deviceInfo type
@@ -199,6 +205,35 @@ router
 
         await addDoc(collection(db, 'sensorData'), newSensorData);
         context.response.body = "Sensor data uploaded! 😁"
+        context.response.status = 201;
+    })
+    .post('/phone-directory', async (context) => {
+        const { phone, name, devices } = await context.request.body({ type: 'json' }).value;
+        try {
+            const phone_query = query(collection(db, "phoneDirectoryData"), where("phone", "==", phone));
+            const phone_snapshot = await getDocs(phone_query);
+            if (phone_snapshot.empty) {
+                // Create new phone directory data
+                const new_phone_directory_data: phoneDirectoryData = {
+                    phone,
+                    name,
+                    devices
+                };
+                await addDoc(collection(db, 'phoneDirectoryData'), new_phone_directory_data);
+            }
+            else {
+                const phone_ref = doc(db, "phoneDirectoryData", phone_snapshot.docs[0].id);
+                const update_field = {
+                    name,
+                    devices
+                }
+                await updateDoc(phone_ref, update_field);
+            }
+        } catch (e) {
+            console.log(e);
+            context.response.body = "Something went wrong!"
+        }
+        context.response.body = "Phone directory data uploaded! 😁"
         context.response.status = 201;
     });
 
