@@ -109,6 +109,24 @@ router
            }
         }
     })
+    .get('/sensors/:device_id/data', (context) => {
+        if (context.params && context.params.device_id) {
+            const { device_id } = context.params;
+           try {
+                const sensor = devices.get(device_id);
+
+                if (sensor) {
+                    context.response.body = sensor;
+                } else {
+                    context.response.body = "Sensor not found.";
+                }
+
+           } catch (e) {
+                console.log(e);
+                context.response.body = "Something went wrong!"
+           }
+        }
+    })
     .post('/sensors', async (context) => {
         const { device_id, smoke_read, time } = await context.request.body({ type: 'json' }).value;
         
