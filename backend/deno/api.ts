@@ -42,7 +42,7 @@ const RED = 2;
 const BLACK = 3;
 
 // Define smoke tolerance
-const SMOKE_TOLERANCE = 150;
+const SMOKE_TOLERANCE = 384;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
