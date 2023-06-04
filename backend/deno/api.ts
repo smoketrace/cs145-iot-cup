@@ -1,6 +1,6 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { collection, getFirestore, getDoc, addDoc, updateDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { collection, getFirestore, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
@@ -210,24 +210,22 @@ router
     .post('/phone-directory', async (context) => {
         const { phone, name, devices } = await context.request.body({ type: 'json' }).value;
         try {
-            const phone_query = query(collection(db, "phoneDirectoryData"), where("phone", "==", phone));
-            const phone_snapshot = await getDocs(phone_query);
-            if (phone_snapshot.empty) {
+            const phone_entry = await getDoc(doc(db, "phoneDirectoryData", phone));
+            if (phone_entry.exists()) {
+                const update_field = {
+                    name,
+                    devices
+                }
+                await updateDoc(doc(db, 'phoneDirectoryData', phone), update_field);
+            }
+            else {
                 // Create new phone directory data
                 const new_phone_directory_data: phoneDirectoryData = {
                     phone,
                     name,
                     devices
                 };
-                await addDoc(collection(db, 'phoneDirectoryData'), new_phone_directory_data);
-            }
-            else {
-                const phone_ref = doc(db, "phoneDirectoryData", phone_snapshot.docs[0].id);
-                const update_field = {
-                    name,
-                    devices
-                }
-                await updateDoc(phone_ref, update_field);
+                await setDoc(doc(db, 'phoneDirectoryData', phone), new_phone_directory_data);
             }
         } catch (e) {
             console.log(e);
