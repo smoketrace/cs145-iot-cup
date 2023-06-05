@@ -1,6 +1,6 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { collection, getFirestore, addDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { collection, getFirestore, addDoc, doc, query, orderBy, limit, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
@@ -78,7 +78,8 @@ router
     })
     .get('/sensors', async (context) => {
         try {
-            const sensors = await getDocs(collection(db, "sensorData"));
+            const sensors_query = query(collection(db, "sensorData"), orderBy("time", "desc"), limit(25));
+            const sensors = await getDocs(sensors_query);
             const data = sensors.docs.map((doc) => doc.data());
             context.response.body = data;
         } catch (e) {
