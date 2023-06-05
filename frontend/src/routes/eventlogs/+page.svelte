@@ -12,7 +12,7 @@
     import { auth } from "$lib/firebase";
     import { firestore } from "$lib/firebase";
 
-    const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(50));
+    const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(25));
 </script>
 
 <div>
@@ -29,7 +29,7 @@
             let:count
         >
             {#if count == 0}
-                <span>Fetching data...</span>
+                <span>Waiting for new data...</span>
             {:else}
                 <p>Showing {count} entries (in the future, allow view entries from the past hour, day, week)</p>
                 {#each data as smokeReading}
