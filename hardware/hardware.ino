@@ -13,8 +13,9 @@
 // Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
 #define SMOKE_INT 5
 
-// Define BUZZER_PIN to be the pin used for the buzzer
+// Define BUZZER_PIN and SENSOR_PIN to be the pin used for the buzzer and sensor, respectively
 #define BUZZER_PIN 18
+#define SENSOR_PIN 32
 
 // Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
 const char* rootCACertificate = \
@@ -48,9 +49,6 @@ HTTPClient https;
 // Buffer to contain sensor data to be sent to the server
 char buffer[200];
 
-// Define curr_time as printable current time
-char * curr_time;
-
 // Not sure if WiFiClientSecure checks the validity date of the certificate. 
 // Setting clock just to be sure...
 void setClock() {
@@ -82,18 +80,14 @@ void setup() {
   Serial.begin(115200);
   // Serial.setDebugOutput(true);
 
-  // Set the resolution to 12 bits (0-4096)
-  analogReadResolution(12);
-
   Serial.println();
   Serial.println();
   Serial.println();
-
-  smoke_read = analogRead(4);
 
   WiFi.mode(WIFI_STA);
   // WiFiMulti.addAP("Proposal", "approved");
   // WiFiMulti.addAP("4studentstoo", "W1F14students");
+  WiFiMulti.addAP("AndroidAP12D8", "12345678");
   WiFiMulti.addAP("Redmi Note 9", "12343210");
   WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Mat");
 
@@ -113,13 +107,14 @@ void setup() {
   setClock(); 
 
   EasyBuzzer.setPin(BUZZER_PIN);
-  
+  pinMode(SENSOR_PIN, INPUT);
 }
 
 void loop() {
   // Buzzer alarm sequence
+  smoke_read = analogRead(SENSOR_PIN);
   EasyBuzzer.update();
-  if (smoke_read >= 150) {
+  if (smoke_read >= 384) {
     /* Beep at a given frequency for 100 times. */
     EasyBuzzer.beep(1000);
   }

@@ -1,12 +1,14 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { collection, getFirestore, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
+const real_db = getDatabase(firebaseApp);
 
 // Twilio SMS Credentials
 const accountSid: string = <string>(
@@ -48,7 +50,7 @@ const RED = 2;
 const BLACK = 3;
 
 // Define smoke tolerance
-const SMOKE_TOLERANCE = 150;
+const SMOKE_TOLERANCE = 384;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
@@ -84,24 +86,39 @@ router
     })
     .get('/sensors', async (context) => {
         try {
-            const sensors = await getDocs(collection(db, "sensorData"));
-            const data = sensors.docs.map((doc) => doc.data());
-            context.response.body = data;
+            const target = context.sendEvents();
+            const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
+            onValue(sensor_ref, (snapshot) => {
+                console.log(snapshot.val());
+                target.dispatchMessage(snapshot.val());
+            });
         } catch (e) {
             console.log(e);
-            context.response.body = "Something went wrong!"
+            context.response.body = "Something went wrong!";
         }
     })
     .get('/sensors/:device_id', async (context) => {
         if (context.params && context.params.device_id) {
+            const { device_id: ref_dev } = context.params;
+            try {
+                const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
+                const values = await get(sensor_ref).then((snapshot) => {
+                    return snapshot.val();
+                })
+                const array = Object.values(values);
+                const filtered = array.filter(({ device_id: dev, smoke_read, time }) => dev == ref_dev);
+                context.response.body = filtered;
+            } catch (e) {
+                console.log(e);
+                context.response.body = "Something went wrong!";
+            }
+        }
+    })
+    .get('/sensors/:device_id/data', (context) => {
+        if (context.params && context.params.device_id) {
             const { device_id } = context.params;
            try {
-                const sensorDataRef = collection(db, "sensorData");
-                const dataQuery = query(sensorDataRef, where("device_id", "==", device_id));
-                const sensor = await getDocs(dataQuery).then((querySnapshot) => {
-                    const data = querySnapshot.docs.map((doc) => doc.data());
-                    return data;
-                })
+                const sensor = devices.get(device_id);
 
                 if (sensor) {
                     context.response.body = sensor;
@@ -203,7 +220,8 @@ router
             time: timestamp,
         };
 
-        await addDoc(collection(db, 'sensorData'), newSensorData);
+        const post_ref = push(ref(real_db, 'sensorData'));
+        await set(post_ref, newSensorData);
         context.response.body = "Sensor data uploaded! 😁"
         context.response.status = 201;
     })

@@ -6,9 +6,18 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fetchFromAPI } from "$lib/helpers/fetch";
+    
+    import { collection, query, orderBy, limit } from "firebase/firestore";
+	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
+    import { auth } from "$lib/firebase";
+    import { firestore } from "$lib/firebase";
 
-	let sensor_data: any = {}
-	onMount(() => {sensor_data = fetchFromAPI()})
+    const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(25));
+    
+    const source = new EventSource("https://smoketrace-api.deno.dev/sensors");
+    source.onmessage = (event) => {
+        console.log(event.data);
+    }
 </script>
 
 <div>
@@ -17,4 +26,25 @@
 	<p>
 		[Contains significant smoke readings and sensor health reports]
 	</p>
+
+    <!-- <FirebaseApp {auth} {firestore}>
+        <Collection
+            ref={sortEntriesByTime}
+            let:data
+            let:count
+        >
+            {#if count == 0}
+                <span>Waiting for new data...</span>
+            {:else}
+                <p>Showing {count} entries (in the future, allow view entries from the past hour, day, week)</p>
+                {#each data as smokeReading}
+                    {#if smokeReading.smoke_read > 0}
+                        {new Date((smokeReading.time.seconds)*1000).toLocaleString()} - {smokeReading.device_id} detected smoke level {smokeReading.smoke_read}
+                        <hr>
+                    {/if}
+                {/each}
+            {/if}
+            <span slot="loading">Fetching data...</span>
+        </Collection>
+    </FirebaseApp> -->
 </div>

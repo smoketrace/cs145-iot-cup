@@ -43,14 +43,12 @@
     return graphData
   }
 
-  
-
   onMount(() => { 
   
-    // // fetching from api
+    // fetching from api
     fetchFromAPI()
       .then((data) => {
-        return formatGraphData(data as SensorReadingType[])
+        return formatGraphData(data)
       })
       .then(graphData => {
 
@@ -66,10 +64,6 @@
       .catch(error => {
         console.error('Error:', error);
       })
-
-
-
-  
 })
 
 
