@@ -14,7 +14,7 @@
 #define SMOKE_INT 5
 
 // Define BUZZER_PIN and SENSOR_PIN to be the pin used for the buzzer and sensor, respectively
-#define BUZZER_PIN 18
+#define BUZZER_PIN 25
 #define SENSOR_PIN 32
 
 // Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
