@@ -13,6 +13,11 @@
     import { firestore } from "$lib/firebase";
 
     const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(25));
+    
+    const source = new EventSource("https://smoketrace-api.deno.dev/sensors");
+    source.onmessage = (event) => {
+        console.log(event.data);
+    }
 </script>
 
 <div>
@@ -22,7 +27,7 @@
 		[Contains significant smoke readings and sensor health reports]
 	</p>
 
-    <FirebaseApp {auth} {firestore}>
+    <!-- <FirebaseApp {auth} {firestore}>
         <Collection
             ref={sortEntriesByTime}
             let:data
@@ -41,5 +46,5 @@
             {/if}
             <span slot="loading">Fetching data...</span>
         </Collection>
-    </FirebaseApp>
+    </FirebaseApp> -->
 </div>
