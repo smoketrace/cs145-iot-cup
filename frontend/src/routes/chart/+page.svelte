@@ -48,19 +48,33 @@
         graphData = event.data
         console.log(graphData);
         
-    	}
+      // graphData = {"-NXEqNB928JMP96s3lsr":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTJ2MGp1GxmfeTeu":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTngNJpL7ekTkKRw":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEyzSW0CBtXY5Bzojj":{"device_id":"ESP32-EYRON","smoke_read":155,"time":{"nanoseconds":0,"seconds":69}}}
+      
+      let smokeData = [ ]
 
-      graphData = {"-NXEqNB928JMP96s3lsr":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTJ2MGp1GxmfeTeu":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTngNJpL7ekTkKRw":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEyzSW0CBtXY5Bzojj":{"device_id":"ESP32-EYRON","smoke_read":155,"time":{"nanoseconds":0,"seconds":69}}}
-      /*
-      id {
-        device_id:,
-        smoke_read
-        time {
-          nanoseconds:
-          seconds
-        }
-      }
-      */
+      for (const key in graphData) {
+        // assumption, each key has a value
+        const value = graphData[key];
+        smokeData.push({
+          x: value?.time.seconds * 1000,
+          y: value?.smoke_read,
+        })
+      } 
+
+      console.log("Smoke Data", smokeData);
+      
+      // graph here
+    
+      const chartData = {
+          datasets: [
+            {
+            data: smokeData
+            }
+          ]
+        };
+
+
+      // graphData = {"-NXEqNB928JMP96s3lsr":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTJ2MGp1GxmfeTeu":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTngNJpL7ekTkKRw":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEyzSW0CBtXY5Bzojj":{"device_id":"ESP32-EYRON","smoke_read":155,"time":{"nanoseconds":0,"seconds":69}}}
       
       let smokeData = [ ]
 
@@ -103,8 +117,8 @@
           },
         },
       });
-    }
-  });
+    	}
+
 </script>
 
 
