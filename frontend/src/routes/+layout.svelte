@@ -1,18 +1,18 @@
 <script>
-	import Header from './Header.svelte';
 	import './styles.css';
+
+	import Sidebar from './Sidebar.svelte';
+	
+	let sidebarOpen = false;
 </script>
 
 <div class="app">
-	<Header />
+	<Sidebar bind:sidebarOpen/>
 
 	<main>
 		<slot />
 	</main>
 
-	<footer>
-		<p>copyright line here</p>
-	</footer>
 </div>
 
 <style>
@@ -31,13 +31,6 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		background-color: blanchedalmond;
 	}
 
 	/* @media (min-width: 480px) {
