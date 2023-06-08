@@ -4,20 +4,50 @@
 </svelte:head>
 
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { fetchFromAPI } from "$lib/helpers/fetch";
-    
+
     import { collection, query, orderBy, limit } from "firebase/firestore";
 	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
     import { auth } from "$lib/firebase";
     import { firestore } from "$lib/firebase";
+    import { json } from "@sveltejs/kit";
+    import { readable } from "svelte/store";
 
     const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(25));
-    
-    const source = new EventSource("https://smoketrace-api.deno.dev/sensors");
-    source.onmessage = (event) => {
-        console.log(event.data);
+
+    const apiUrl = "https://smoketrace-api.deno.dev/sensors";
+    const source = new EventSource(apiUrl);
+    let readings: JSON;
+
+    $: console.log(readings);
+
+    onMount(() => {
+            console.log("welcome back, opening new connection...");
+            initialFetch();
+        })
+
+    async function initialFetch() {
+        const res = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+                Accept: "text/event-stream"
+            },
+            cache: "no-cache",
+            // keepalive: true,
+        })
+        readings = JSON.parse(await res.json());
     }
+
+    source.onmessage = (event) => {
+        readings = JSON.parse(event.data);
+    }
+
+    onDestroy(() => {
+        console.log("clicked away. closing connection");
+        source.close();
+    })
+
 </script>
 
 <div>
