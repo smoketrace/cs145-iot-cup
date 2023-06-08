@@ -13,7 +13,7 @@
 
   let lineGraph: HTMLCanvasElement;
 
-  interface SmokeData {
+  interface RawSmokeData {
     [key: string]: {
       device_id: string;
       smoke_read: number;
@@ -42,7 +42,7 @@
   onMount(() => {
     if (browser) {
 
-      let graphData: SmokeData
+      let graphData: RawSmokeData
       const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors");
 	    evtSource.onmessage = function(event) {
         graphData = event.data
@@ -76,7 +76,14 @@
       console.log("Smoke Data", smokeData);
       
       // graph here
-
+    
+      const chartData = {
+          datasets: [
+            {
+            data: smokeData
+            }
+          ]
+        };
 
 
       new Chart(lineGraph, {
