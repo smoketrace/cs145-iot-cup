@@ -3,10 +3,12 @@
 :root {
 	--fire-orange: #f58433;
 	--smoke-beige: #716658;
-	--smoketrace-black: #322f2a;
+	--smoketrace-black: #322b2e;
+	--smoketrace-white: #f2f0eb;
 }
 
 body {
 	min-height: 100vh;
 	margin: 0;
+	background-color: var(--smoketrace-white);
 }
