@@ -5,27 +5,30 @@
 
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
-	import { fetchFromAPI } from "$lib/helpers/fetch";
 
-    import { collection, query, orderBy, limit } from "firebase/firestore";
-	import { FirebaseApp, Collection, collectionStore } from "sveltefire";
-    import { auth } from "$lib/firebase";
-    import { firestore } from "$lib/firebase";
-    import { json } from "@sveltejs/kit";
-    import { readable } from "svelte/store";
-
-    const sortEntriesByTime = query(collection(firestore, 'sensorData'),  orderBy('time'), limit(25));
-
+    let source: EventSource;
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
-    const source = new EventSource(apiUrl);
-    let readings: JSON;
-
-    $: console.log(readings);
+    interface smokeReading {
+        device_id: string,
+        smoke_read: number,
+        time: {
+            nanoseconds: number,
+            seconds: number,
+        }
+    }
+    let data: smokeReading[];
 
     onMount(() => {
-            console.log("welcome back, opening new connection...");
-            initialFetch();
-        })
+        console.log("welcome back, opening new connection...");//
+        const source = new EventSource(apiUrl);
+
+        // initialFetch();
+        source.onmessage = (event) => {
+            console.log("receiving update...");//
+            data = Object.values(JSON.parse(event.data));
+            data.sort((a, b) => b.time.seconds - a.time.seconds);
+        }
+    })
 
     async function initialFetch() {
         const res = await fetch(apiUrl, {
@@ -36,16 +39,14 @@
             cache: "no-cache",
             // keepalive: true,
         })
-        readings = JSON.parse(await res.json());
-    }
-
-    source.onmessage = (event) => {
-        readings = JSON.parse(event.data);
+        data = Object.values(JSON.parse(await res.json()));
+        data.sort((a, b) => b.time.seconds - a.time.seconds);
     }
 
     onDestroy(() => {
-        console.log("clicked away. closing connection");
-        source.close();
+        console.log("clicked away. closing connection");//
+        source?.close();
+        // BUGFIX: This doesn't get closed?!
     })
 
 </script>
