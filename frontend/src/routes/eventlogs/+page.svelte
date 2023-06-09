@@ -6,6 +6,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 
+    import Fa from 'svelte-fa/src/fa.svelte';
+    import { faFire } from '@fortawesome/free-solid-svg-icons'
+
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
 
     let source: EventSource;
@@ -54,6 +57,8 @@
 </script>
 
 <div>
+
+    <Fa icon={faFire} />
 	<h1>Incident Logs</h1>
 
 	<p>
