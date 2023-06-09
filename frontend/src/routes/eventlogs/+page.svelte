@@ -11,8 +11,9 @@
 
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
 
-    let source: EventSource;
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
+
+    let source: EventSource;
     interface smokeReading {
         device_id: string,
         smoke_read: number,
@@ -21,19 +22,29 @@
             seconds: number,
         }
     }
-    let data: smokeReading[];
+    let processed_data: smokeReading[] = [];
 
     onMount(() => {
         console.log("welcome back, opening new connection...");//
-        const source = new EventSource(apiUrl);
+        source = new EventSource(apiUrl);
 
         // initialFetch();
         source.onmessage = (event) => {
             console.log("receiving update...");//
-            data = Object.values(JSON.parse(event.data));
-            data.sort((a, b) => b.time.seconds - a.time.seconds);
+            parseAndSort(event.data);
         }
     })
+
+    onDestroy(() => {
+        console.log("clicked away. closing connection");//
+        source?.close();
+        // BUGFIX: This doesn't get closed?!
+    })
+
+    function parseAndSort(data: string) {
+        processed_data = JSON.parse(data);
+        processed_data.sort((a: smokeReading, b: smokeReading) => b.time.seconds - a.time.seconds);
+    }
 
     async function initialFetch() {
         const res = await fetch(apiUrl, {
@@ -44,15 +55,8 @@
             cache: "no-cache",
             // keepalive: true,
         })
-        data = Object.values(JSON.parse(await res.json()));
-        data.sort((a, b) => b.time.seconds - a.time.seconds);
+        parseAndSort(await res.json());
     }
-
-    onDestroy(() => {
-        console.log("clicked away. closing connection");//
-        source?.close();
-        // BUGFIX: This doesn't get closed?!
-    })
 
 </script>
 
@@ -65,11 +69,11 @@
 		[Contains significant smoke readings and sensor health reports]
 	</p>
 
-    {#if data === undefined}
+    {#if processed_data === undefined}
         <em>Waiting for data...</em>
     {:else}
         <ul class="logs">
-            {#each data as {device_id, smoke_read, time}}
+            {#each processed_data as {device_id, smoke_read, time}}
                 {#if smoke_read > 0}
                     <SmokeLogItem seconds={time.seconds} {device_id} {smoke_read} />
                     <br>
