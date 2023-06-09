@@ -106,7 +106,7 @@ void loop() {
     EasyBuzzer.stopBeep();
   }
   Serial.print("[HTTP] begin...\n");
-  if (http.begin(client, "http://smoketrace-api.deno.dev/sensors")) {  // HTTP
+  if (http.begin("http://192.168.43.35:8000/sensors")) {  // HTTP
     Serial.print("[HTTP] POST...\n");
     // payload
     // Calibrate time to nearest 10 seconds
