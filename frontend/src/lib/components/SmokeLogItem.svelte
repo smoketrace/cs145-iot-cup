@@ -9,12 +9,10 @@
     function generateMsg(smoke_read: number) {
         if (smoke_read < 0)
             return null;
-        if (smoke_read < 100)
-            return 'LOW smoke warning';
-        if (smoke_read < 400)
-            return 'MEDIUM smoke warning';
+        if (smoke_read < 384)
+            return "Smoke warning: LOW";
 
-       return 'HIGH smoke warning';
+        return "Smoke warning: HIGH";
     }
 </script>
 
