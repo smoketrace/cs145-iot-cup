@@ -93,8 +93,9 @@ router
             const target = context.sendEvents();
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
             onValue(sensor_ref, (snapshot) => {
-                console.log(snapshot.val());
-                target.dispatchMessage(snapshot.val());
+                const array = Object.values(snapshot.val());
+                console.log(array);
+                target.dispatchMessage(array);
             });
         } catch (e) {
             console.log(e);
