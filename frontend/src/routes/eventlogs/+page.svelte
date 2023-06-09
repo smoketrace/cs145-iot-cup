@@ -4,7 +4,9 @@
 </svelte:head>
 
 <script lang="ts">
-	import { onDestroy, onMount } from "svelte";
+	import { onDestroy, onMount } from 'svelte';
+
+    import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
 
     let source: EventSource;
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
@@ -61,12 +63,19 @@
     {#if data === undefined}
         <em>Waiting for data...</em>
     {:else}
-        {#each data as {device_id, smoke_read, time}}
-            {#if smoke_read > 0}
-                {@const timestamp = new Date(time.seconds).toLocaleString()}
-                {timestamp} : {device_id} detected smoke level {smoke_read}
-                <br>
-            {/if}
-        {/each}
+        <ul class="logs">
+            {#each data as {device_id, smoke_read, time}}
+                {#if smoke_read > 0}
+                    <SmokeLogItem seconds={time.seconds} {device_id} {smoke_read} />
+                    <br>
+                {/if}
+            {/each}
+        </ul>
     {/if}
 </div>
+
+<style>
+    .logs {
+        border-left: 1.5px solid var(--smoke-beige);
+    }
+</style>
