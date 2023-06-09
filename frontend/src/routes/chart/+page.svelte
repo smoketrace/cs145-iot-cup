@@ -8,24 +8,23 @@
   import { Chart, registerables } from 'chart.js';
   import { onMount } from 'svelte';
   import 'chartjs-adapter-date-fns';
+  import { dataset_dev } from 'svelte/internal';
 
   Chart.register(...registerables);
 
   let lineGraph: HTMLCanvasElement;
 
-  interface SSEData {
-    [key: string]: {
-      device_id: string;
-      smoke_read: number;
-      time: {
-        nanoseconds: number;
-        seconds: number;
-      }
+  interface SmokeData {
+    device_id: string,
+    smoke_read: number,
+    time: {
+      nanoseconds: number,
+      seconds: number,
     }
   }
 
   // Parsing data from SSE to graph data
-  function parseSSEData(JsonData: SSEData) {
+  function parseSSEData(JsonData: SmokeData[]) {
     let smokeData = [ ]
 
     for (const key in JsonData) {
@@ -52,34 +51,22 @@
   onMount(() => {
     if (browser) {
 
-      let graphData: SSEData
-      const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors");
+      let graphData: SmokeData[]
+      const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors/");
 	    evtSource.onmessage = function(event) {
-        graphData = event.data
+        graphData = JSON.parse(event.data)
         console.log(graphData);
+        chartData = parseSSEData(graphData)
         
-    	}
-
-      // dummy data, replace with fetched SSE values
-      graphData =    {
-      "-NXPSzbO4BJTmv5kcTx_":{"device_id":"ESP32-JOSHEN","smoke_read":198,"time":{"nanoseconds":0,"seconds":1686297627}},
-      "-NXPSzbO4BJTmv581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":638,"time":{"nanoseconds":0,"seconds":1686397627}},
-      "-NXPSzbO4BJT13581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":215,"time":{"nanoseconds":0,"seconds":1686497627}},
-      "-NXPSzbO4B139v581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":581,"time":{"nanoseconds":0,"seconds":1686597627}},
-      "-NXPdanN3B139v581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":389,"time":{"nanoseconds":0,"seconds":1686697627}},
-      }
-
-      
-      let chartData = parseSSEData(graphData)
-
-
+        // graph here
+        
       new Chart(lineGraph, {
         type: 'line',
         data: chartData,
         options: {
           scales: {
             x: {
-              type: "time",
+              type: "timeseries",
               time: {
                 unit: "hour"
               }  
@@ -90,6 +77,20 @@
           },
         },
       });
+        
+        
+    	}
+
+      // dummy data, replace with fetched SSE values
+      graphData = [
+        {"device_id":"ESP32-JOSHEN","smoke_read":98,"time":{"nanoseconds":0,"seconds":1686297627}},
+        {"device_id":"ESP32-JOSHEN","smoke_read":132,"time":{"nanoseconds":0,"seconds":1686296627}}
+      ]   
+
+      
+      let chartData = parseSSEData(graphData)
+
+
     }
   });
 </script>
