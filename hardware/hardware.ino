@@ -6,16 +6,18 @@
 #include <WiFiClientSecure.h>
 #include <stdio.h>
 #include <time.h>
+#include <WiFiManager.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <ArduinoJson.h>
 #include "EasyBuzzer.h"
 
 // Include definitions
 
-// Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
-#define SMOKE_INT 5
-
-// Define BUZZER_PIN and SENSOR_PIN to be the pin used for the buzzer and sensor, respectively
-#define BUZZER_PIN 25
-#define SENSOR_PIN 32
+#define SMOKE_INT 5 // Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
+#define BUZZER_PIN 25 // Define BUZZER_PIN to be the pin used for the buzzer
+#define SENSOR_PIN 32 // Define SENSOR_PIN to be the pin used for the sensor
+#define TRIGGER_PIN 0 // Define TRIGGER_PIN to be the pin used for the WiFiManager
 
 // Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
 const char* rootCACertificate = \
@@ -46,6 +48,9 @@ WiFiClientSecure client;
 // Setup HTTP client
 HTTPClient https;
 
+// Setup WiFi Manager
+WiFiManager wm;
+
 // Buffer to contain sensor data to be sent to the server
 char buffer[200];
 
@@ -56,7 +61,9 @@ void setClock() {
 
   Serial.print(F("Waiting for NTP time sync: "));
   time_t nowSecs = time(nullptr);
+  int ntp_timeout = 0;
   while (nowSecs < 8 * 3600 * 2) {
+    if (++ntp_timeout == 100) { ESP.restart(); }
     delay(500);
     Serial.print(F("."));
     yield();
@@ -69,6 +76,25 @@ void setClock() {
   Serial.print(curr_time);
 }
 
+// Run ESP32 configuration as an interrupt
+void IRAM_ATTR esp32config(){
+  // set configportal timeout
+  wm.setConfigPortalTimeout(120);
+
+  if (!wm.startConfigPortal("OnDemandAP")) {
+    Serial.println("failed to connect and hit timeout");
+    delay(3000);
+    //reset and try again, or maybe put it to deep sleep
+    ESP.restart();
+    delay(5000);
+  }
+
+  //if you get here you have connected to the WiFi
+  Serial.println("connected...yeey :)");
+  
+  setClock();
+}
+
 int time_offset() {
   time_t raw_time = time(nullptr);
   struct tm * curr_time = localtime(&raw_time);
@@ -78,39 +104,31 @@ int time_offset() {
 void setup() {
   // Set up Serial Monitor at 115200 baud
   Serial.begin(115200);
-  // Serial.setDebugOutput(true);
+  
+  EasyBuzzer.setPin(BUZZER_PIN);
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  pinMode(SENSOR_PIN, INPUT);
+  
+  // Attach interrupt for ESP32 configuration
+  attachInterrupt(TRIGGER_PIN, esp32config, FALLING);
 
   Serial.println();
   Serial.println();
   Serial.println();
 
   WiFi.mode(WIFI_STA);
-  // WiFiMulti.addAP("Proposal", "approved");
-  // WiFiMulti.addAP("4studentstoo", "W1F14students");
-  WiFiMulti.addAP("AndroidAP12D8", "12345678");
-  WiFiMulti.addAP("Redmi Note 9", "12343210");
-  WiFiMulti.addAP("Matimtiman_Residences", "OurHouse60Mat");
-
-  // wait for WiFi connection
-  Serial.print("Waiting for WiFi to connect...");
-  while ((WiFiMulti.run() != WL_CONNECTED)) {
-    Serial.print(".");
-  }
-  Serial.println(" connected");
 
   // Set certificate for the client
   client.setCACert(rootCACertificate);
 
   // allow reuse (if server supports it)
   https.setReuse(true);
-
-  setClock(); 
-
-  EasyBuzzer.setPin(BUZZER_PIN);
-  pinMode(SENSOR_PIN, INPUT);
 }
 
 void loop() {
+  if ( WiFi.status() != WL_CONNECTED ) {
+    esp32config();
+  }
   // Buzzer alarm sequence
   smoke_read = analogRead(SENSOR_PIN);
   EasyBuzzer.update();
