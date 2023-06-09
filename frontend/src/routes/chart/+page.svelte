@@ -13,7 +13,7 @@
 
   let lineGraph: HTMLCanvasElement;
 
-  interface RawSmokeData {
+  interface SSEData {
     [key: string]: {
       device_id: string;
       smoke_read: number;
@@ -24,80 +24,53 @@
     }
   }
 
+  // Parsing data from SSE to graph data
+  function parseSSEData(JsonData: SSEData) {
+    let smokeData = [ ]
 
-  const chartData = {
-    datasets: [
-      {
-      data: [
-        {x: 1686113092095, y: 10},
-        {x: 1686114092095, y: 15},
-        {x: 1686115092095, y: 9},
-        {x: 1686116092095, y: 36},
-        {x: 1686120092000, y: 20},
-      ],
-      },
-    ],
-  };
+    for (const key in JsonData) {
+      // assumption, each key has a value
+      const value = JsonData[key];
+      smokeData.push({
+        x: value?.time.seconds * 1000,
+        y: value?.smoke_read,
+      })
+    }
+
+    console.log("Smoke Data", smokeData);
+    
+    const chartData = {
+        datasets: [
+          {
+          data: smokeData
+          }
+        ]
+      };        
+    return chartData
+  }
 
   onMount(() => {
     if (browser) {
 
-      let graphData: RawSmokeData
+      let graphData: SSEData
       const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors");
 	    evtSource.onmessage = function(event) {
         graphData = event.data
         console.log(graphData);
         
-      // graphData = {"-NXEqNB928JMP96s3lsr":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTJ2MGp1GxmfeTeu":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTngNJpL7ekTkKRw":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEyzSW0CBtXY5Bzojj":{"device_id":"ESP32-EYRON","smoke_read":155,"time":{"nanoseconds":0,"seconds":69}}}
-      
-      let smokeData = [ ]
+    	}
 
-      for (const key in graphData) {
-        // assumption, each key has a value
-        const value = graphData[key];
-        smokeData.push({
-          x: value?.time.seconds * 1000,
-          y: value?.smoke_read,
-        })
-      } 
-
-      console.log("Smoke Data", smokeData);
-      
-      // graph here
-    
-      const chartData = {
-          datasets: [
-            {
-            data: smokeData
-            }
-          ]
-        };
-
-
-      // graphData = {"-NXEqNB928JMP96s3lsr":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTJ2MGp1GxmfeTeu":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEqTngNJpL7ekTkKRw":{"device_id":"ESP32-JOSHEN","smoke_read":60,"time":{"nanoseconds":0,"seconds":664}},"-NXEyzSW0CBtXY5Bzojj":{"device_id":"ESP32-EYRON","smoke_read":155,"time":{"nanoseconds":0,"seconds":69}}}
-      
-      let smokeData = [ ]
-
-      for (const key in graphData) {
-        // assumption, each key has a value
-        const value = graphData[key];
-        smokeData.push({
-          x: value?.time.seconds * 1000,
-          y: value?.smoke_read,
-        })
+      // dummy data, replace with fetched SSE values
+      graphData =    {
+      "-NXPSzbO4BJTmv5kcTx_":{"device_id":"ESP32-JOSHEN","smoke_read":198,"time":{"nanoseconds":0,"seconds":1686297627}},
+      "-NXPSzbO4BJTmv581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":638,"time":{"nanoseconds":0,"seconds":1686397627}},
+      "-NXPSzbO4BJT13581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":215,"time":{"nanoseconds":0,"seconds":1686497627}},
+      "-NXPSzbO4B139v581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":581,"time":{"nanoseconds":0,"seconds":1686597627}},
+      "-NXPdanN3B139v581_x3":{"device_id":"ESP32-JOSHEN","smoke_read":389,"time":{"nanoseconds":0,"seconds":1686697627}},
       }
 
-      console.log("Smoke Data", smokeData);
       
-      // graph here
-    
-      const chartData = {
-          datasets: [
-            {
-            data: smokeData
-            }
-          ]
-        };
+      let chartData = parseSSEData(graphData)
 
 
       new Chart(lineGraph, {
@@ -117,8 +90,8 @@
           },
         },
       });
-    	}
-
+    }
+  });
 </script>
 
 
