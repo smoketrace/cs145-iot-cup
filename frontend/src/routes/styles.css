@@ -38,7 +38,8 @@
 :root {
 	--fire-orange: #f58433;
 	--smoke-beige: #716658;
-	--smoketrace-black: #322f2a;
+	--smoketrace-black: #322b2e;
+	--smoketrace-white: #f2f0eb;
 
 	font-family: 'Roboto', system-ui;
 	font-weight: 300;
@@ -47,6 +48,7 @@
 body {
 	min-height: 100vh;
 	margin: 0;
+	background-color: var(--smoketrace-white);
 }
 
 h1 {
