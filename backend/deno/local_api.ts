@@ -178,13 +178,12 @@ router
 
         // Set current status based on smoke_read or reconnection
         const status = () => {
-            if (smoke_read >= SMOKE_TOLERANCE) {
-                return RED;
-            }
             switch(devices.get(device_id).status){
                 case ORANGE:
                 case BLACK:
                     return RECON;
+            if (smoke_read >= SMOKE_TOLERANCE) {
+                return RED;
             }
             return GREEN;
         }
