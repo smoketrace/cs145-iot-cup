@@ -12,7 +12,9 @@ const firebaseConfig = JSON.parse(raw_firebaseConfig);
 
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
-const real_db = getDatabase(firebaseApp);
+
+const rdb_url = 'https://smoketrace-145-default-rtdb.asia-southeast1.firebasedatabase.app/';
+const real_db = getDatabase(firebaseApp, rdb_url);
 
 // Twilio SMS Credentials
 const accountSid: string = <string>(
