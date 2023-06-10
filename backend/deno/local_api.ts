@@ -178,14 +178,16 @@ router
 
         // Set current status based on smoke_read or reconnection
         const status = () => {
-            switch(devices.get(device_id).status){
+            switch(devices.get(device_id).status) {
                 case ORANGE:
                 case BLACK:
                     return RECON;
-            if (smoke_read >= SMOKE_TOLERANCE) {
-                return RED;
+                default:
+                    if (smoke_read >= SMOKE_TOLERANCE) {
+                        return RED;
+                    }
+                    return GREEN;
             }
-            return GREEN;
         }
 
         // Obtain previous sms_timeout_handler from the device map, if exists
