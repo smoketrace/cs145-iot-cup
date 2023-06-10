@@ -34,6 +34,7 @@ const helper = new TwilioSMS(accountSid, keySid, secret);
 
 // Add type to contain sensor data from ESP32
 type sensorData = {
+    status: STATUS;
     device_id: string;
     smoke_read: number;
     time: number;
