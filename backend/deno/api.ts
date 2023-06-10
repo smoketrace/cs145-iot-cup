@@ -1,7 +1,7 @@
 import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getFirestore, collection, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-import { getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+import { getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue, DataSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 import { assertExists } from "https://deno.land/std@0.152.0/testing/asserts.ts";
@@ -98,7 +98,7 @@ router
         try {
             const target = context.sendEvents();
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
-            onValue(sensor_ref, (snapshot) => {
+            onValue(sensor_ref, (snapshot: DataSnapshot) => {
                 const array = Object.values(snapshot.val());
                 console.log(array);
                 target.dispatchMessage(array);
@@ -113,7 +113,7 @@ router
             const { device_id: ref_dev } = context.params;
             try {
                 const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
-                const values = await get(sensor_ref).then((snapshot) => {
+                const values = await get(sensor_ref).then((snapshot: DataSnapshot) => {
                     return snapshot.val();
                 })
                 const array = Object.values(values);
