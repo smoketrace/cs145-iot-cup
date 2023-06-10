@@ -74,7 +74,7 @@
     {:else}
         <ul class="logs">
             {#each processed_data as {device_id, smoke_read, time}}
-                {#if smoke_read > 0}
+                {#if smoke_read >= 384}
                     <SmokeLogItem seconds={time.seconds} {device_id} {smoke_read} />
                     <br>
                 {/if}
