@@ -61,7 +61,7 @@ const SMOKE_TOLERANCE = 384;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
-    status: number; // Perceived status of the device
+    status: STATUS; // Perceived status of the device
     last_read: number; // Last smoke_read of the device
     last_alive: number; // Last time the device sent a POST message to the server
     status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
@@ -238,7 +238,7 @@ router
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
-            status, // Set status to GREEN upon receiving the POST request
+            status: STATUS.GREEN, // Set status to GREEN upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
             last_alive: time, // Set last_alive to received time
             status_timeout_handler, // Store the timeout handler for the device status
@@ -251,7 +251,7 @@ router
 
         // Create new sensor data
         const newSensorData: sensorData = {
-            status,
+            status: STATUS.GREEN,
             device_id,
             smoke_read,
             time,
