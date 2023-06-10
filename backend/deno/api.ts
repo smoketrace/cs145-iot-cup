@@ -160,9 +160,9 @@ router
 
         // Create timeout handler for ORANGE/BLACK device status, if device status is currently GREEN/RED
         const status_timeout_handler = setTimeout(() => { // Set timeout handler
-            (deviceGet.status == RED // Check last device status
-                ? (deviceGet.status = BLACK) // Transition to BLACK status if the last status is RED after timeout
-                : (deviceGet.status = ORANGE) // Else, just transition to ORANGE status
+            (deviceGet.status == STATUS.RED // Check last device status
+                ? (deviceGet.status = STATUS.BLACK) // Transition to BLACK status if the last status is RED after timeout
+                : (deviceGet.status = STATUS.ORANGE) // Else, just transition to ORANGE status
             ); // If the timer expires, set the device status to ORANGE
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
@@ -180,14 +180,14 @@ router
         // Set current status based on smoke_read or reconnection
         const status = () => {
             switch(deviceGet.status) {
-                case ORANGE:
-                case BLACK:
-                    return RECON;
+                case STATUS.ORANGE:
+                case STATUS.BLACK:
+                    return STATUS.RECON;
                 default:
                     if (smoke_read >= SMOKE_TOLERANCE) {
-                        return RED;
+                        return STATUS.RED;
                     }
-                    return GREEN;
+                    return STATUS.GREEN;
             }
         }
 
@@ -202,7 +202,7 @@ router
 
         // Create timeout handler for the SMS service
         switch(status){
-            case RED: // Send status-based SMS for RED device status
+            case STATUS.RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
                     sms_timeout_handler = setTimeout(() => { // Set timeout handler
                         const message: SMSRequest = {
@@ -215,7 +215,7 @@ router
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
                         // Create new sensor data with SMS label
                         const newSensorData: sensorData = {
-                            status: SMS,
+                            status: STATUS.SMS,
                             device_id,
                             smoke_read,
                             time,
@@ -226,8 +226,8 @@ router
                     sms_timeout_running = true;
                 }
                 break;
-            case RECON: // Abort SMS sending timeout if status is RECON
-            case GREEN: // Also abort SMS sending timeout if status is GREEN
+            case STATUS.RECON: // Abort SMS sending timeout if status is RECON
+            case STATUS.GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
                     console.log(deviceGet);
                     clearTimeout(sms_timeout_handler);
