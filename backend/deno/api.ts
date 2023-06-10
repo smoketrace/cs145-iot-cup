@@ -1,13 +1,15 @@
-import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
+import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getFirestore, collection, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
-import { assert } from "https://deno.land/std@0.152.0/_util/assert.ts";
 import { assertExists } from "https://deno.land/std@0.152.0/testing/asserts.ts";
 
-const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
+const raw_firebaseConfig = Deno.env.get('FIREBASE_CONFIG');
+assertExists(raw_firebaseConfig)
+const firebaseConfig = JSON.parse(raw_firebaseConfig);
+
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
 const real_db = getDatabase(firebaseApp);
