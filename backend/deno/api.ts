@@ -178,7 +178,7 @@ router
         }, 15000); // Set timeout for 15 seconds
 
         // Set current status based on smoke_read or reconnection
-        const status = () => {
+        const getStatus = () => {
             switch(deviceGet.status) {
                 case STATUS.ORANGE:
                 case STATUS.BLACK:
@@ -201,7 +201,7 @@ router
         }
 
         // Create timeout handler for the SMS service
-        switch(status){
+        switch(getStatus()){
             case STATUS.RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
                     sms_timeout_handler = setTimeout(() => { // Set timeout handler
