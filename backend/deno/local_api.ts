@@ -48,10 +48,14 @@ type phoneDirectoryData = {
 };
 
 // Define status constants for deviceInfo type
-const GREEN = 0;
-const ORANGE = 1;
-const RED = 2;
-const BLACK = 3;
+enum STATUS {
+    GREEN,
+    ORANGE,
+    RED,
+    BLACK,
+    RECON,
+    SMS,
+}
 
 // Define smoke tolerance
 const SMOKE_TOLERANCE = 384;
@@ -139,7 +143,14 @@ router
     })
     .post('/sensors', async (context) => {
         const { device_id, smoke_read, time } = await context.request.body({ type: 'json' }).value;
-        
+
+        // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
+        if (!device_id || !time) {
+            context.response.body = "Sensor data cannot be uploaded! 😭"
+            context.response.status = 400;
+            return;
+        }
+
         // Refresh timer for device_id if the device already exists in the device map
         if (devices.has(device_id)){ // If the device ID already exists in the device map
             const device_timer: ReturnType<typeof setTimeout> = devices.get(device_id).status_timeout_handler; // Obtain the timeout handler identifier stored in the device map
@@ -154,10 +165,29 @@ router
             ); // If the timer expires, set the device status to ORANGE 
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
+            // Code for sending a mandatory ORANGE/BLACK packet to the front end
+            const newSensorData: sensorData = {
+                status: devices.get(device_id).status, // either BLACK or ORANGE
+                device_id,
+                smoke_read,
+                time,
+            };
+            const post_ref = push(ref(real_db, 'sensorData'));
+            await set(post_ref, newSensorData);
         }, 15000); // Set timeout for 15 seconds
 
-        // Set current status based on smoke_read
-        const status = smoke_read >= SMOKE_TOLERANCE ? RED : GREEN;
+        // Set current status based on smoke_read or reconnection
+        const status = () => {
+            if (smoke_read >= SMOKE_TOLERANCE) {
+                return RED;
+            }
+            switch(devices.get(device_id).status){
+                case ORANGE:
+                case BLACK:
+                    return RECON;
+            }
+            return GREEN;
+        }
 
         // Obtain previous sms_timeout_handler from the device map, if exists
         // Else, set sms_timeout_handler and sms_timeout_running to 0 and false, respectively
@@ -181,11 +211,21 @@ router
                         helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
+                        // Create new sensor data with SMS label
+                        const newSensorData: sensorData = {
+                            status: SMS,
+                            device_id,
+                            smoke_read,
+                            time,
+                        };
+                        const post_ref = push(ref(real_db, 'sensorData'));
+                        await set(post_ref, newSensorData);
                     }, 15000); // Set timeout for 15 seconds
                     sms_timeout_running = true;
                 }
                 break;
-            case GREEN: // Abort SMS sending timeout if status is GREEN
+            case RECON: // Abort SMS sending timeout if status is RECON
+            case GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
                     console.log(devices.get(device_id));
                     clearTimeout(sms_timeout_handler);
@@ -206,16 +246,8 @@ router
 
         // Update device information of the device in the device map
         devices.set(device_id, device_info); // Set timeout for 15 seconds
-        // console.log("RECENT POST DEVICE INFO:");
-        // console.log(devices.get(device_id));
 
-        // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
-        if (!device_id || !time) {
-            context.response.body = "Sensor data cannot be uploaded! 😭"
-            context.response.status = 400;
-            return;
-        }
-        // creating new sensor data
+        // Create new sensor data
         const newSensorData: sensorData = {
             status,
             device_id,
@@ -225,6 +257,7 @@ router
 
         const post_ref = push(ref(real_db, 'sensorData'));
         await set(post_ref, newSensorData);
+
         context.response.body = "Sensor data uploaded! 😁"
         context.response.status = 201;
     })
