@@ -6,15 +6,10 @@ import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 import { assertExists } from "https://deno.land/std@0.152.0/testing/asserts.ts";
 
-const raw_firebaseConfig = Deno.env.get('FIREBASE_CONFIG');
-assertExists(raw_firebaseConfig)
-const firebaseConfig = JSON.parse(raw_firebaseConfig);
-
+const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
-
-const rdb_url = 'https://smoketrace-145-default-rtdb.asia-southeast1.firebasedatabase.app/';
-const real_db = getDatabase(firebaseApp, rdb_url);
+const real_db = getDatabase(firebaseApp);
 
 // Twilio SMS Credentials
 const accountSid: string = <string>(
@@ -147,8 +142,6 @@ router
     })
     .post('/sensors', async (context) => {
         const { device_id, smoke_read, time } = await context.request.body({ type: 'json' }).value;
-        const deviceGet = devices.get(device_id);
-        assertExists(deviceGet);
 
         // Case handling if device id or time is blank - maybe change to case if received info is incorrect?
         if (!device_id || !time) {
@@ -159,21 +152,21 @@ router
 
         // Refresh timer for device_id if the device already exists in the device map
         if (devices.has(device_id)){ // If the device ID already exists in the device map
-            const device_timer: ReturnType<typeof setTimeout> = deviceGet.status_timeout_handler; // Obtain the timeout handler identifier stored in the device map
+            const device_timer: ReturnType<typeof setTimeout> = device.get(device_id).status_timeout_handler; // Obtain the timeout handler identifier stored in the device map
             clearTimeout(device_timer); // Deactivate timer set with timeout handler identifier stored in the device map
         }
 
         // Create timeout handler for ORANGE/BLACK device status, if device status is currently GREEN/RED
         const status_timeout_handler = setTimeout(() => { // Set timeout handler
-            (deviceGet.status == STATUS.RED // Check last device status
-                ? (deviceGet.status = STATUS.BLACK) // Transition to BLACK status if the last status is RED after timeout
-                : (deviceGet.status = STATUS.ORANGE) // Else, just transition to ORANGE status
+            (device.get(device_id).status == STATUS.RED // Check last device status
+                ? (device.get(device_id).status = STATUS.BLACK) // Transition to BLACK status if the last status is RED after timeout
+                : (device.get(device_id).status = STATUS.ORANGE) // Else, just transition to ORANGE status
             ); // If the timer expires, set the device status to ORANGE
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
             // Code for sending a mandatory ORANGE/BLACK packet to the front end
             const newSensorData: sensorData = {
-                status: deviceGet.status, // either BLACK or ORANGE
+                status: device.get(device_id).status, // either BLACK or ORANGE
                 device_id,
                 smoke_read,
                 time,
@@ -183,8 +176,8 @@ router
         }, 15000); // Set timeout for 15 seconds
 
         // Set current status based on smoke_read or reconnection
-        const getStatus = () => {
-            switch(deviceGet.status) {
+        const status = (() => {
+            switch(device.get(device_id).status) {
                 case STATUS.ORANGE:
                 case STATUS.BLACK:
                     return STATUS.RECON;
@@ -194,19 +187,19 @@ router
                     }
                     return STATUS.GREEN;
             }
-        }
+        })() // Set as one function all, and store the function call to the status variable
 
         // Obtain previous sms_timeout_handler from the device map, if exists
         // Else, set sms_timeout_handler and sms_timeout_running to 0 and false, respectively
         let sms_timeout_handler = 0;
         let sms_timeout_running = false;
         if (devices.has(device_id)){
-            sms_timeout_handler = deviceGet.sms_timeout_handler;
-            sms_timeout_running = deviceGet.sms_timeout_running;
+            sms_timeout_handler = device.get(device_id).sms_timeout_handler;
+            sms_timeout_running = device.get(device_id).sms_timeout_running;
         }
 
         // Create timeout handler for the SMS service
-        switch(getStatus()){
+        switch(status){
             case STATUS.RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
                     sms_timeout_handler = setTimeout(() => { // Set timeout handler
@@ -234,7 +227,7 @@ router
             case STATUS.RECON: // Abort SMS sending timeout if status is RECON
             case STATUS.GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
-                    console.log(deviceGet);
+                    console.log(device.get(device_id));
                     clearTimeout(sms_timeout_handler);
                     sms_timeout_running = false;
                 }
@@ -243,7 +236,7 @@ router
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
-            status: STATUS.GREEN, // Set status to GREEN upon receiving the POST request
+            status, // Set status to GREEN upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
             last_alive: time, // Set last_alive to received time
             status_timeout_handler, // Store the timeout handler for the device status
@@ -256,7 +249,7 @@ router
 
         // Create new sensor data
         const newSensorData: sensorData = {
-            status: STATUS.GREEN,
+            status,
             device_id,
             smoke_read,
             time,
