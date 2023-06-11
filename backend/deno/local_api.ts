@@ -1,7 +1,7 @@
-import { Application, Router, send } from "https://deno.land/x/oak@v12.4.0/mod.ts";
+import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { connectFirestoreEmulator, getFirestore, collection, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-import { connectDatabaseEmulator, getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+import { connectDatabaseEmulator, getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue, DataSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
@@ -36,6 +36,7 @@ const helper = new TwilioSMS(accountSid, keySid, secret);
 
 // Add type to contain sensor data from ESP32
 type sensorData = {
+    status: STATUS;
     device_id: string;
     smoke_read: number;
     time: number;
@@ -45,6 +46,7 @@ type sensorData = {
 type phoneDirectoryData = {
     phone: string;
     name: string;
+    devices: string[]
 };
 
 // Define status constants for deviceInfo type
@@ -62,7 +64,7 @@ const SMOKE_TOLERANCE = 384;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
-    status: number; // Perceived status of the device
+    status: STATUS; // Perceived status of the device
     last_read: number; // Last smoke_read of the device
     last_alive: number; // Last time the device sent a POST message to the server
     status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
@@ -96,7 +98,7 @@ router
         try {
             const target = context.sendEvents();
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
-            onValue(sensor_ref, (snapshot) => {
+            onValue(sensor_ref, (snapshot: DataSnapshot) => {
                 const array = Object.values(snapshot.val());
                 console.log(array);
                 target.dispatchMessage(array);
@@ -111,7 +113,7 @@ router
             const { device_id: ref_dev } = context.params;
             try {
                 const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
-                const values = await get(sensor_ref).then((snapshot) => {
+                const values = await get(sensor_ref).then((snapshot: DataSnapshot) => {
                     return snapshot.val();
                 })
                 const array = Object.values(values);
@@ -158,37 +160,60 @@ router
         }
 
         // Create timeout handler for ORANGE/BLACK device status, if device status is currently GREEN/RED
-        const status_timeout_handler = setTimeout(() => { // Set timeout handler
-            (devices.get(device_id).status == RED // Check last device status
-                ? (devices.get(device_id).status = BLACK) // Transition to BLACK status if the last status is RED after timeout
-                : (devices.get(device_id).status = ORANGE) // Else, just transition to ORANGE status
-            ); // If the timer expires, set the device status to ORANGE 
+        const status_timeout_handler = setTimeout(async () => { // Set timeout handler
+            (devices.get(device_id).status == STATUS.RED // Check last device status
+                ? (devices.get(device_id).status = STATUS.BLACK) // Transition to BLACK status if the last status is RED after timeout
+                : (devices.get(device_id).status = STATUS.ORANGE) // Else, just transition to ORANGE status
+            ); // If the timer expires, set the device status to ORANGE
             console.log(`${device_id} did not respond for 15 seconds`); // Print to console upon 15 seconds of not POST-ing (debug)
             console.log(devices.get(device_id)); // Print to console about the latest device information of the unresponsive device
             // Code for sending a mandatory ORANGE/BLACK packet to the front end
-            const newSensorData: sensorData = {
-                status: devices.get(device_id).status, // either BLACK or ORANGE
-                device_id,
-                smoke_read,
-                time,
-            };
-            const post_ref = push(ref(real_db, 'sensorData'));
-            await set(post_ref, newSensorData);
+            if(devices.has(device_id)){
+                console.log(devices.get(device_id).status);
+                // Update device map
+                const device_info: deviceInfo = {
+                    status: devices.get(device_id).status, // either BLACK or ORANGE
+                    last_read: devices.get(device_id).last_read, // Set last_read to old smoke_read
+                    last_alive: devices.get(device_id).last_alive, // Set last_alive to old time
+                    status_timeout_handler: devices.get(device_id).status_timeout_handler, // Capture the old timeout handler for the device status
+                    sms_timeout_handler: devices.get(device_id).sms_timeout_handler, // Capture the old timeout handler for the SMS service
+                    sms_timeout_running: devices.get(device_id).sms_timeout_running, // Capture the old variable that checks if the SMS timeout handler is running
+                };
+
+                // Update device information of the device in the device map
+                devices.set(device_id, device_info); // Replace device status
+
+                const newSensorData: sensorData = {
+                    status: devices.get(device_id).status, // either BLACK or ORANGE
+                    device_id,
+                    smoke_read,
+                    time,
+                };
+                const post_ref = push(ref(real_db, 'sensorData'));
+                await set(post_ref, newSensorData);
+            }
         }, 15000); // Set timeout for 15 seconds
 
         // Set current status based on smoke_read or reconnection
-        const status = () => {
+        const status = (() => {
+            if(!devices.has(device_id)) {
+                if (smoke_read >= SMOKE_TOLERANCE) {
+                    return STATUS.RED;
+                }
+                return STATUS.GREEN;
+            }
             switch(devices.get(device_id).status) {
-                case ORANGE:
-                case BLACK:
-                    return RECON;
+                case STATUS.ORANGE:
+                case STATUS.BLACK:
+                    return STATUS.RECON;
                 default:
                     if (smoke_read >= SMOKE_TOLERANCE) {
-                        return RED;
+                        return STATUS.RED;
                     }
-                    return GREEN;
+                    return STATUS.GREEN;
             }
-        }
+        })() // Set as one function call, and store the function call to the status variable
+        console.log(status);
 
         // Obtain previous sms_timeout_handler from the device map, if exists
         // Else, set sms_timeout_handler and sms_timeout_running to 0 and false, respectively
@@ -201,9 +226,9 @@ router
 
         // Create timeout handler for the SMS service
         switch(status){
-            case RED: // Send status-based SMS for RED device status
+            case STATUS.RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
-                    sms_timeout_handler = setTimeout(() => { // Set timeout handler
+                    sms_timeout_handler = setTimeout(async () => { // Set timeout handler
                         const message: SMSRequest = {
                             From: fromPhoneNumber,
                             To: toPhoneNumber,
@@ -212,9 +237,8 @@ router
                         helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
-                        // Create new sensor data with SMS label
                         const newSensorData: sensorData = {
-                            status: SMS,
+                            status: STATUS.SMS,
                             device_id,
                             smoke_read,
                             time,
@@ -225,8 +249,8 @@ router
                     sms_timeout_running = true;
                 }
                 break;
-            case RECON: // Abort SMS sending timeout if status is RECON
-            case GREEN: // Also abort SMS sending timeout if status is GREEN
+            case STATUS.RECON: // Abort SMS sending timeout if status is RECON
+            case STATUS.GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
                     console.log(devices.get(device_id));
                     clearTimeout(sms_timeout_handler);
