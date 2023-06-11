@@ -30,11 +30,17 @@ const toPhoneNumber: string = <string>(
 // Create helper variable for Twilio SMS service
 const helper = new TwilioSMS(accountSid, keySid, secret);
 
-// Add type to contain sensor data from ESP32
+// Add type to contain pure sensor data from ESP32
 type sensorData = {
-    status: STATUS;
     device_id: string;
     smoke_read: number;
+    time: number;
+};
+
+// Add type to contain sensor status for incident logs
+type sensorStatus = {
+    status: STATUS;
+    device_id: string;
     time: number;
 };
 
@@ -159,6 +165,18 @@ router
 
         // Refresh timer for device_id if the device already exists in the device map
         if (devices.has(device_id)){ // If the device ID already exists in the device map
+            // If device is reconnected, send a RECON status to the database
+            switch(devices.get(device_id).status){
+                case STATUS.BLACK:
+                case STATUS.ORANGE:
+                    const newSensorStatus: sensorStatus = {
+                        status: STATUS.RECON, // RECON status
+                        device_id,
+                        time,
+                    };
+                    const post_ref = push(ref(real_db, 'sensorStatus'));
+                    await set(post_ref, newSensorStatus);
+            }
             const device_timer: ReturnType<typeof setTimeout> = devices.get(device_id).status_timeout_handler; // Obtain the timeout handler identifier stored in the device map
             clearTimeout(device_timer); // Deactivate timer set with timeout handler identifier stored in the device map
         }
@@ -174,6 +192,7 @@ router
             // Code for sending a mandatory ORANGE/BLACK packet to the front end
             if(devices.has(device_id)){
                 console.log(devices.get(device_id).status);
+
                 // Update device map
                 const device_info: deviceInfo = {
                     status: devices.get(device_id).status, // either BLACK or ORANGE
@@ -187,37 +206,18 @@ router
                 // Update device information of the device in the device map
                 devices.set(device_id, device_info); // Replace device status
 
-                const newSensorData: sensorData = {
+                const newSensorStatus: sensorStatus = {
                     status: devices.get(device_id).status, // either BLACK or ORANGE
                     device_id,
-                    smoke_read,
                     time,
                 };
-                const post_ref = push(ref(real_db, 'sensorData'));
-                await set(post_ref, newSensorData);
+                const post_ref = push(ref(real_db, 'sensorStatus'));
+                await set(post_ref, newSensorStatus);
             }
         }, 15000); // Set timeout for 15 seconds
 
-        // Set current status based on smoke_read or reconnection
-        const status = (() => {
-            if(!devices.has(device_id)) {
-                if (smoke_read >= SMOKE_TOLERANCE) {
-                    return STATUS.RED;
-                }
-                return STATUS.GREEN;
-            }
-            switch(devices.get(device_id).status) {
-                case STATUS.ORANGE:
-                case STATUS.BLACK:
-                    return STATUS.RECON;
-                default:
-                    if (smoke_read >= SMOKE_TOLERANCE) {
-                        return STATUS.RED;
-                    }
-                    return STATUS.GREEN;
-            }
-        })() // Set as one function call, and store the function call to the status variable
-        console.log(status);
+        // Set current status based on smoke_read
+        const status = smoke_read >= SMOKE_TOLERANCE ? STATUS.RED : STATUS.GREEN;
 
         // Obtain previous sms_timeout_handler from the device map, if exists
         // Else, set sms_timeout_handler and sms_timeout_running to 0 and false, respectively
@@ -241,19 +241,17 @@ router
                         helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
-                        const newSensorData: sensorData = {
+                        const newSensorStatus: sensorStatus = {
                             status: STATUS.SMS,
                             device_id,
-                            smoke_read,
                             time,
                         };
-                        const post_ref = push(ref(real_db, 'sensorData'));
-                        await set(post_ref, newSensorData);
+                        const post_ref = push(ref(real_db, 'sensorStatus'));
+                        await set(post_ref, newSensorStatus);
                     }, 15000); // Set timeout for 15 seconds
                     sms_timeout_running = true;
                 }
                 break;
-            case STATUS.RECON: // Abort SMS sending timeout if status is RECON
             case STATUS.GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
                     console.log(devices.get(device_id));
@@ -265,7 +263,7 @@ router
 
         // Create mutable deviceInfo entry of device_id in the device map
         const device_info: deviceInfo = {
-            status, // Set status to GREEN upon receiving the POST request
+            status, // Set status to GREEN or RED upon receiving the POST request
             last_read: smoke_read, // Set last_read to received smoke_read
             last_alive: time, // Set last_alive to received time
             status_timeout_handler, // Store the timeout handler for the device status
@@ -278,7 +276,6 @@ router
 
         // Create new sensor data
         const newSensorData: sensorData = {
-            status,
             device_id,
             smoke_read,
             time,
