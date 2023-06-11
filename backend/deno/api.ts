@@ -97,21 +97,21 @@ router
     .get('/', (context) => {
         context.response.body = 'This is the API homepage! 💜🔥🍺';
     })
-    .get('/sensors', async (context) => {
+    .get('/sensors', (context) => {
         try {
             const target = context.sendEvents();
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
             const status_ref = query(ref(real_db, 'sensorStatus'), orderByChild("time"), limitToLast(25));
             onValue(sensor_ref, (sensor_snapshot: DataSnapshot) => {
-                const sensor_array = Object.values(sensor_snapshot.val());
-                const sensor_event = new ServerSentEvent("sensor", sensor_array);
-                console.log(sensor_array);
+                const sensor_readings = sensor_snapshot.val();
+                const sensor_event = new ServerSentEvent("sensor", sensor_readings);
+                console.log(sensor_readings);
                 target.dispatchEvent(sensor_event);
             });
             onValue(status_ref, (status_snapshot: DataSnapshot) => {
-                const status_array = Object.values(status_snapshot.val());
-                const status_event = new ServerSentEvent("status", status_array);
-                console.log(status_array);
+                const status_data = status_snapshot.val();
+                const status_event = new ServerSentEvent("status", status_data);
+                console.log(status_data);
                 target.dispatchEvent(status_event);
             });
         } catch (e) {
