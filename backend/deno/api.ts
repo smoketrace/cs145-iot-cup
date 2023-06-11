@@ -1,4 +1,4 @@
-import { Application, Router } from "https://deno.land/x/oak@v12.4.0/mod.ts";
+import { Application, Router, ServerSentEvent } from "https://deno.land/x/oak@v12.4.0/mod.ts";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getFirestore, collection, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue, DataSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
@@ -94,10 +94,18 @@ router
         try {
             const target = context.sendEvents();
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
-            onValue(sensor_ref, (snapshot: DataSnapshot) => {
-                const array = Object.values(snapshot.val());
-                console.log(array);
-                target.dispatchMessage(array);
+            const status_ref = query(ref(real_db, 'sensorStatus'), orderByChild("time"), limitToLast(25));
+            onValue(sensor_ref, (sensor_snapshot: DataSnapshot) => {
+                const sensor_array = Object.values(sensor_snapshot.val());
+                const sensor_event = new ServerSentEvent("sensor", sensor_array);
+                console.log(sensor_array);
+                target.dispatchEvent(sensor_event);
+            });
+            onValue(status_ref, (status_snapshot: DataSnapshot) => {
+                const status_array = Object.values(status_snapshot.val());
+                const status_event = new ServerSentEvent("status", status_array);
+                console.log(status_array);
+                target.dispatchEvent(status_event);
             });
         } catch (e) {
             console.log(e);
