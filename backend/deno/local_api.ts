@@ -106,7 +106,10 @@ router
             const sensor_ref = query(ref(real_db, 'sensorData'), orderByChild("time"), limitToLast(25));
             const status_ref = query(ref(real_db, 'sensorStatus'), orderByChild("time"), limitToLast(25));
             onValue(sensor_ref, (sensor_snapshot: DataSnapshot) => {
-                const sensor_array = Object.values(sensor_snapshot.val());
+                const sensor_array = (() => {
+                    if (sensor_snapshot.exists()) { return Object.values(sensor_snapshot.val()); }
+                    return [];
+                })();
                 const sensor_event = new ServerSentEvent("sensor", {
                     data: JSON.stringify(sensor_array),
                 });
@@ -114,7 +117,10 @@ router
                 target.dispatchEvent(sensor_event);
             });
             onValue(status_ref, (status_snapshot: DataSnapshot) => {
-                const status_array = Object.values(status_snapshot.val());
+                const status_array = (() => {
+                    if (status_snapshot.exists()) { return Object.values(status_snapshot.val()); }
+                    return [];
+                })();
                 const status_event = new ServerSentEvent("status", {
                     data: JSON.stringify(status_array),
                 });
