@@ -103,13 +103,17 @@ router
             const status_ref = query(ref(real_db, 'sensorStatus'), orderByChild("time"), limitToLast(25));
             onValue(sensor_ref, (sensor_snapshot: DataSnapshot) => {
                 const sensor_array = Object.values(sensor_snapshot.val());
-                const sensor_event = new ServerSentEvent("sensor", sensor_array);
+                const sensor_event = new ServerSentEvent("sensor", {
+                    data: JSON.stringify(sensor_array),
+                });
                 console.log(sensor_array);
                 target.dispatchEvent(sensor_event);
             });
             onValue(status_ref, (status_snapshot: DataSnapshot) => {
                 const status_array = Object.values(status_snapshot.val());
-                const status_event = new ServerSentEvent("status", status_array);
+                const status_event = new ServerSentEvent("status", {
+                    data: JSON.stringify(status_array),
+                });
                 console.log(status_array);
                 target.dispatchEvent(status_event);
             });
