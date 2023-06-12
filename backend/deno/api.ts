@@ -45,6 +45,7 @@ type sensorStatus = {
 type phoneDirectoryData = {
     phone: string;
     name: string;
+    devices: string[]
 };
 
 // Define status constants for deviceInfo type
