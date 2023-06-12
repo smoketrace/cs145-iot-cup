@@ -12,8 +12,8 @@
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
 
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
+    const source = new EventSource(apiUrl);
 
-    let source: EventSource;
     interface smokeReading {
         device_id: string,
         smoke_read: number,
@@ -26,13 +26,13 @@
 
     onMount(() => {
         console.log("welcome back, opening new connection...");//
-        source = new EventSource(apiUrl);
 
-        // initialFetch();
-        source.onmessage = (event) => {
-            console.log("receiving update...");//
-            parseAndSort(event.data);
-        }
+        source.addEventListener("sensor",(evt) => {
+            console.log("received new smoke readings:", evt.data);
+        });
+        source.addEventListener("status", (evt) => {
+            console.log("checking device health:", evt.data);
+        });
     })
 
     onDestroy(() => {
