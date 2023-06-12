@@ -4,6 +4,9 @@
     ".write": true,
     "sensorData": {
     	".indexOn": ["time"]
+    },
+    "sensorStatus": {
+    	".indexOn": ["time"]
     }
   }
 }
