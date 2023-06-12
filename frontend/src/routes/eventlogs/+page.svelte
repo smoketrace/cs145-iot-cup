@@ -60,46 +60,26 @@
     })
 
     function parseAndSort(data: string) {
-        processed_data = JSON.parse(data);
-        processed_data.sort((a: smokeReading, b: smokeReading) => b.time.seconds - a.time.seconds);
+        const json = JSON.parse(data);
+        return json.sort((a: smokeReading | sensorHealth, b: smokeReading | sensorHealth) => b.time - a.time);
     }
-
-    async function initialFetch() {
-        const res = await fetch(apiUrl, {
-            method: "GET",
-            headers: {
-                Accept: "text/event-stream"
-            },
-            cache: "no-cache",
-            // keepalive: true,
-        })
-        parseAndSort(await res.json());
-    }
-
 </script>
 
-<div>
+<Fa icon={faFire} />
+<h1>Incident Logs</h1>
 
-    <Fa icon={faFire} />
-	<h1>Incident Logs</h1>
-
-	<p>
-		[Contains significant smoke readings and sensor health reports]
-	</p>
-
-    {#if processed_data === undefined}
-        <em>Waiting for data...</em>
-    {:else}
-        <ul class="logs">
-            {#each processed_data as {device_id, smoke_read, time}}
-                {#if smoke_read >= 384}
-                    <SmokeLogItem seconds={time.seconds} {device_id} {smoke_read} />
-                    <br>
-                {/if}
-            {/each}
-        </ul>
-    {/if}
-</div>
+{#if readings === undefined}
+    <em>Waiting for data...</em>
+{:else}
+    <ul class="logs">
+        {#each readings as {device_id, smoke_read, time}}
+            {#if smoke_read >= 384}
+                <SmokeLogItem seconds={time} {device_id} {smoke_read} />
+                <br>
+            {/if}
+        {/each}
+    </ul>
+{/if}
 
 <style>
     .logs {
