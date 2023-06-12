@@ -45,7 +45,6 @@ type sensorStatus = {
 type phoneDirectoryData = {
     phone: string;
     name: string;
-    devices: string[]
 };
 
 // Define status constants for deviceInfo type
@@ -299,13 +298,12 @@ router
         context.response.status = 201;
     })
     .post('/phone-directory', async (context) => {
-        const { phone, name, devices } = await context.request.body({ type: 'json' }).value;
+        const { phone, name } = await context.request.body({ type: 'json' }).value;
         try {
             const phone_entry = await getDoc(doc(db, "phoneDirectoryData", phone));
             if (phone_entry.exists()) {
                 const update_field = {
                     name,
-                    devices
                 }
                 await updateDoc(doc(db, 'phoneDirectoryData', phone), update_field);
             }
@@ -314,7 +312,6 @@ router
                 const new_phone_directory_data: phoneDirectoryData = {
                     phone,
                     name,
-                    devices
                 };
                 await setDoc(doc(db, 'phoneDirectoryData', phone), new_phone_directory_data);
             }
