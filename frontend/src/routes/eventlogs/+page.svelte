@@ -17,21 +17,39 @@
     interface smokeReading {
         device_id: string,
         smoke_read: number,
-        time: {
-            nanoseconds: number,
-            seconds: number,
-        }
+        time: number,
     }
-    let processed_data: smokeReading[] = [];
+
+    enum STATUS {
+        GREEN,
+        ORANGE,
+        RED,
+        BLACK,
+        RECON,
+        SMS,
+    }
+
+
+    interface sensorHealth {
+        status: STATUS,
+        device_id: string,
+        time: number,
+    }
+
+    let readings: smokeReading[] = [];
+    let sensor_status: sensorHealth[] = [];
 
     onMount(() => {
         console.log("welcome back, opening new connection...");//
 
         source.addEventListener("sensor",(evt) => {
             console.log("received new smoke readings:", evt.data);
+            readings = parseAndSort(evt.data);
         });
         source.addEventListener("status", (evt) => {
             console.log("checking device health:", evt.data);
+            sensor_status = parseAndSort(evt.data);
+
         });
     })
 
