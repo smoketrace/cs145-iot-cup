@@ -27,9 +27,6 @@ const secret: string = <string>(
 const fromPhoneNumber: string = <string>(
   Deno.env.get('TWILIO_FROM_PHONE_NUMBER')
 );
-const toPhoneNumber: string = <string>(
-  Deno.env.get('TWILIO_TO_PHONE_NUMBER')
-);
 
 // Create helper variable for Twilio SMS service
 const helper = new TwilioSMS(accountSid, keySid, secret);
