@@ -68,21 +68,45 @@
 <Fa icon={faFire} />
 <h1>Incident Logs</h1>
 
-{#if readings === undefined}
-    <em>Waiting for data...</em>
-{:else}
-    <ul class="logs">
-        {#each readings as {device_id, smoke_read, time}}
-            {#if smoke_read >= 384}
-                <SmokeLogItem seconds={time} {device_id} {smoke_read} />
-                <br>
-            {/if}
-        {/each}
-    </ul>
-{/if}
+<main>
+    {#if readings === undefined || sensor_status === undefined}
+        <em>Waiting for data...</em>
+    {:else}
+        <div class="columns">
+            <section>
+                <h2>Recent smoke readings</h2>
+                <ul class="logs">
+                    {#each readings as {device_id, smoke_read, time}}
+                        {#if smoke_read >= 384}
+                            <SmokeLogItem seconds={time} {device_id} {smoke_read} />
+                            <br>
+                        {/if}
+                    {/each}
+                </ul>
+            </section>
+            <section>
+                <h2>Sensor health reports</h2>
+                <ul class="logs">
+                    {#each sensor_status as {status, device_id}}
+                        {#if status !== STATUS.GREEN}
+                            {device_id} status {status}.
+                            <br>
+                        {/if}
+                    {/each}
+                </ul>
+            </section>
+        </div>
+    {/if}
+</main>
 
 <style>
     .logs {
         border-left: 1.5px solid var(--smoke-beige);
+    }
+
+    .columns {
+        display: flex;
+        justify-content: space-around;
+        align-items: stretch;
     }
 </style>
