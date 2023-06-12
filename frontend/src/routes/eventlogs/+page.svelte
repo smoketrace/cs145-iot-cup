@@ -10,6 +10,7 @@
     import { faFire } from '@fortawesome/free-solid-svg-icons'
 
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
+    import HealthLogItem from '$lib/components/HealthLogItem.svelte';
 
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
     const source = new EventSource(apiUrl);
@@ -87,9 +88,9 @@
             <section>
                 <h2>Sensor health reports</h2>
                 <ul class="logs">
-                    {#each sensor_status as {status, device_id}}
+                    {#each sensor_status as {time, status, device_id}}
                         {#if status !== STATUS.GREEN}
-                            {device_id} status {status}.
+                            <HealthLogItem seconds={time} {status}, {device_id} />
                             <br>
                         {/if}
                     {/each}
