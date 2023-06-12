@@ -37,6 +37,9 @@ WiFiManager wm;
 // Buffer to contain sensor data to be sent to the server
 char buffer[200];
 
+// Boolean to store resetButtonPressed status
+bool resetButtonPressed = false;
+
 // Not sure if WiFiClientSecure checks the validity date of the certificate. 
 // Setting clock just to be sure...
 void setClock() {
@@ -60,22 +63,24 @@ void setClock() {
 }
 
 // Run ESP32 configuration
-void IRAM_ATTR esp32config(){
+void esp32config(){
   // set configportal timeout
   wm.setConfigPortalTimeout(120);
 
-  if (!wm.startConfigPortal("OnDemandAP")) {
-    Serial.println("failed to connect and hit timeout");
-    delay(3000);
-    //reset and try again, or maybe put it to deep sleep
+  if(!wm.autoConnect("Unknown SmokeTrace Device")) {
+    Serial.println("Failed to connect or hit timeout");
     ESP.restart();
-    delay(5000);
-  }
-
-  //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
-  
+  } 
+  else {
+    //if you get here you have connected to the WiFi    
+    Serial.println("connected...yeey :)");
+  }  
   setClock();
+}
+
+// Perform immediate ESP32 reset
+void IRAM_ATTR esp32reset() {
+  resetButtonPressed = true;
 }
 
 int time_offset() {
@@ -93,7 +98,7 @@ void setup() {
   pinMode(SENSOR_PIN, INPUT);
   
   // Attach interrupt for ESP32 configuration
-	attachInterrupt(TRIGGER_PIN, esp32config, FALLING);
+	attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), esp32reset, FALLING);
 
   Serial.println();
   Serial.println();
@@ -106,11 +111,21 @@ void setup() {
 
   // allow reuse (if server supports it)
   http.setReuse(true);
+
+  // connect ESP32 automatically
+  esp32config();
 }
 
 void loop() {
+  if (resetButtonPressed) {
+    // Reset WiFi settings
+    wm.resetSettings();
+    delay(1000);  // Delay to ensure the reset is completed
+    // Restart the device
+    ESP.restart();
+  }
   if ( WiFi.status() != WL_CONNECTED ) {
-    esp32config();
+    return;
   }
   // Buzzer alarm sequence
   smoke_read = analogRead(SENSOR_PIN);
