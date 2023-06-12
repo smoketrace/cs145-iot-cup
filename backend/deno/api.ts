@@ -23,9 +23,6 @@ const secret: string = <string>(
 const fromPhoneNumber: string = <string>(
   Deno.env.get('TWILIO_FROM_PHONE_NUMBER')
 );
-const toPhoneNumber: string = <string>(
-  Deno.env.get('TWILIO_TO_PHONE_NUMBER')
-);
 
 // Create helper variable for Twilio SMS service
 const helper = new TwilioSMS(accountSid, keySid, secret);
@@ -243,12 +240,16 @@ router
             case STATUS.RED: // Send status-based SMS for RED device status
                 if(!sms_timeout_running){
                     sms_timeout_handler = setTimeout(async () => { // Set timeout handler
-                        const message: SMSRequest = {
-                            From: fromPhoneNumber,
-                            To: toPhoneNumber,
-                            Body: `${device_id} has a HIGH reading for 15s already.`, // Initialize string for body
-                        };
-                        helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
+                        const phone_numbers_snapshot = await getDocs(collection(db, "phoneDirectoryData"));
+                        phone_numbers_snapshot.forEach((doc) => {
+                            const phone_data = doc.data();
+                            const message: SMSRequest = {
+                                From: fromPhoneNumber,
+                                To: phone_data.phone,
+                                Body: `Hi ${phone_data.name}! ${device_id} has a HIGH reading for 15s already.`, // Initialize string for body
+                            };
+                            helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
+                        });
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
                         const newSensorStatus: sensorStatus = {
