@@ -1,7 +1,16 @@
 <script lang="ts">
+    enum STATUS {
+        GREEN,
+        ORANGE,
+        RED,
+        BLACK,
+        RECON,
+        SMS,
+    }
+
+    export let status: STATUS;
     export let seconds: number;
     export let device_id: string;
-    export let smoke_read: number;
 
     let timestamp = new Date(seconds*1000).toLocaleString();
 
@@ -10,8 +19,8 @@
 <li>
     <span class="dot"></span>
     <p>{timestamp}</p>
-    <h3>Smoke warning</h3>
-    <p>{device_id} detected smoke level {smoke_read}</p>
+    <h3>Sensor status report: {status}</h3>
+    <p>{device_id} has status</p>
 </li>
 
 <style>
