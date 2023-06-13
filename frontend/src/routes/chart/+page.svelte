@@ -17,10 +17,7 @@
   interface SmokeData {
     device_id: string,
     smoke_read: number,
-    time: {
-      nanoseconds: number,
-      seconds: number,
-    }
+    time: number;
   }
 
   // Parsing data from SSE to graph data
@@ -29,10 +26,11 @@
 
     for (const key in JsonData) {
       // assumption, each key has a value
-      const value = JsonData[key];
+      const value: SmokeData = JsonData[key];
+      
       smokeData.push({
-        x: value?.time.seconds * 1000,
-        y: value?.smoke_read,
+        x: value.time * 1000,
+        y: value.smoke_read,
       })
     }
 
@@ -48,50 +46,77 @@
     return chartData
   }
 
-  onMount(() => {
-    if (browser) {
+  
+  const apiUrl = "https://smoketrace-api.deno.dev/sensors";
+  const source = new EventSource(apiUrl);
 
-      let graphData: SmokeData[]
-      const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors/");
-	    evtSource.onmessage = function(event) {
-        graphData = JSON.parse(event.data)
-        console.log(graphData);
-        chartData = parseSSEData(graphData)
-        
-        // graph here
-        
-      new Chart(lineGraph, {
-        type: 'line',
-        data: chartData,
-        options: {
-          scales: {
-            x: {
-              type: "timeseries",
-              time: {
-                unit: "hour"
-              }  
-            },
-            y: {
-              beginAtZero: true,
-            },
+  onMount(() => {
+    source.addEventListener("sensor",(evt) => {
+      console.log("received new smoke readings:", evt.data);
+      graphData = JSON.parse(evt.data)
+      chartData = parseSSEData(graphData)
+
+  new Chart(lineGraph, {
+      type: 'line',
+      data: chartData,
+      options: {
+        scales: {
+          x: {
+            type: "timeseries",
+            time: {
+              unit: "hour"
+            }  
+          },
+          y: {
+            beginAtZero: true,
           },
         },
-      });
-        
-        
-    	}
+      },
+    } )
+  });
 
-      // dummy data, replace with fetched SSE values
-      graphData = [
-        {"device_id":"ESP32-JOSHEN","smoke_read":98,"time":{"nanoseconds":0,"seconds":1686297627}},
-        {"device_id":"ESP32-JOSHEN","smoke_read":132,"time":{"nanoseconds":0,"seconds":1686296627}}
-      ]   
 
+
+    let graphData: SmokeData[]
+    const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors/");
+    evtSource.onmessage = function(event) {
+      graphData = JSON.parse(event.data)
+      console.log(graphData);
+      chartData = parseSSEData(graphData)
       
-      let chartData = parseSSEData(graphData)
-
-
+      // graph here
+      
+    new Chart(lineGraph, {
+      type: 'line',
+      data: chartData,
+      options: {
+        scales: {
+          x: {
+            type: "timeseries",
+            time: {
+              unit: "hour"
+            }  
+          },
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+      
+      
     }
+
+    // dummy data, replace with fetched SSE values
+    graphData = [
+      {"device_id":"ESP32-JOSHEN","smoke_read":98,"time":{"nanoseconds":0,"seconds":1686297627}},
+      {"device_id":"ESP32-JOSHEN","smoke_read":132,"time":{"nanoseconds":0,"seconds":1686296627}}
+    ]   
+
+    
+    let chartData = parseSSEData(graphData)
+
+
   });
 </script>
 
