@@ -10,8 +10,9 @@
     import { faFire } from '@fortawesome/free-solid-svg-icons'
 
     import type { smokeReading, sensorHealth } from '../../lib/helpers/types';
-    import { STATUS } from '../../lib/helpers/types';
-    import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
+    import { STATUS } from '$lib/helpers/types';
+    import { visibleStore, openModal } from '$lib/helpers/showAlert';
+    import SmokeLogItem from '$lib/components/SmokeLogItem.svelte';
     import HealthLogItem from '$lib/components/HealthLogItem.svelte';
 
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
@@ -31,6 +32,9 @@
             console.log("checking device health:", evt.data);
             sensor_status = parseAndSort(evt.data);
 
+            if (sensor_status[0].status === 6) {
+                openModal();
+            }
         });
     })
 
@@ -68,7 +72,7 @@
             <section>
                 <h2>Sensor health reports</h2>
                 <ul class="logs">
-                    {#each sensor_status as {time, status, device_id}}
+                    {#each sensor_status as {time, status, device_id}, i}
                         {#if status !== STATUS.GREEN}
                             <HealthLogItem seconds={time} {status} {device_id} />
                             <br>

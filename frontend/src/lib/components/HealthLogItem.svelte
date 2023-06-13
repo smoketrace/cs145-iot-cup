@@ -2,7 +2,7 @@
     import { collectionStore } from 'sveltefire';
     import { firestore } from '$lib/firebase';
 
-    import { STATUS } from '../../lib/helpers/types';
+    import { STATUS } from '$lib/helpers/types';
 
     export let status: number;
     export let seconds: number;
