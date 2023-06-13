@@ -1,9 +1,15 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 
 	import logo_circle from '$lib/images/SmokeTrace_Logo_Circle.svg';
 
 	export let sidebarOpen = false;
+
+	function matchRoute(route: string) {
+		console.log($page.url.pathname);
+		console.log(route);
+		return $page.url.pathname == route ? 'currPage' : '';
+	}
 </script>
 
 	<div class="corner">
@@ -11,10 +17,10 @@
 	</div>
 	<nav class:sidebarOpen>
 		<div class="btnGroup">
-			<button class={$page.url.pathname == "/" ? 'currPage':''}><a href="/">Dashboard</a></button>
-			<button class={$page.url.pathname == "/chart" ? 'currPage':''}><a href="/chart">Smoke Chart</a></button>
-			<button class={$page.url.pathname == "/eventlogs" ? 'currPage':''}><a href="/eventlogs">Incident Log</a></button>
-			<button class={$page.url.pathname == "/about" ? 'currPage':''}><a href="/about">About</a></button>
+			<button class={matchRoute('/')}><a class={matchRoute('/')} href="/">Dashboard</a></button>
+			<button class={matchRoute('/chart')}><a class={matchRoute('/chart')} href="/chart">Smoke Chart</a></button>
+			<button class={matchRoute('/eventlogs')}><a class={matchRoute('/eventlogs')} href="/eventlogs">Incident Log</a></button>
+			<button class={matchRoute('/about')}><a class={matchRoute('/about')} href="/about">About</a></button>
 		</div>
 	</nav>
 
@@ -36,7 +42,7 @@
 
 	nav a {
 		display: flex;
-		color: var(--smoketrace-black);
+		color: var(--smoketrace-white);
 		font-size: 1rem;
 		text-decoration: none;
         transition:
@@ -44,8 +50,8 @@
             color 0.1s;
 	}
 
-	a:hover {
-		color: var(--smoketrace-white);
+	a:hover:not(.currPage) {
+		color: var(--orange-hover);
 	}
 
 	.btnGroup {
@@ -70,6 +76,7 @@
 
 	.currPage {
 		background-color: var(--fire-orange);
+		color: var(--smoketrace-black);
 	}
 
 	img {
