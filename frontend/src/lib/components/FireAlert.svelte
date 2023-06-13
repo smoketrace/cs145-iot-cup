@@ -1,5 +1,8 @@
 <script lang="ts">
-	export let showFireAlert: boolean;
+    import Fa from 'svelte-fa/src/fa.svelte';
+    import { faFire } from '@fortawesome/free-solid-svg-icons'
+
+    export let showFireAlert: boolean;
 	let dialog: HTMLDialogElement
 
 	$: if (showFireAlert && dialog) dialog.showModal();
@@ -11,7 +14,7 @@
 	on:close={() => dialog.close()}
     on:click|self={() => dialog.close()}
 >
-    <h1>FIRE WARNING</h1>
+    <h1><Fa icon={faFire} /> FIRE WARNING</h1>
     <p>Sensors have been detecting high smoke levels for five minutes.</p>
     <div class="contactNos">
         <strong>Emergency numbers:</strong>

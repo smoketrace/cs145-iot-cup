@@ -42,7 +42,7 @@
 
 <li>
     <span class="dot"></span>
-    <p>{time_display}</p>
+    <p class="time">{time_display}</p>
     <h3>{status_color} Status</h3>
     <span>{device_id}</span>
     <span>{statusMessages[status]}</span>
@@ -63,5 +63,12 @@
 </li>
 
 <style>
-
+    .time {
+        font-size: smaller;
+    }
+    li {
+        background-color: var(--cement-grey);
+        padding: 0.6rem 1rem;
+        border-radius: 0.35rem;
+    }
 </style>
