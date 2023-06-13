@@ -9,33 +9,12 @@
     import Fa from 'svelte-fa/src/fa.svelte';
     import { faFire } from '@fortawesome/free-solid-svg-icons'
 
+    import type { smokeReading, sensorHealth } from '../../lib/helpers/types';
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
     import HealthLogItem from '$lib/components/HealthLogItem.svelte';
 
     const apiUrl = "https://smoketrace-api.deno.dev/sensors";
     const source = new EventSource(apiUrl);
-
-    interface smokeReading {
-        device_id: string,
-        smoke_read: number,
-        time: number,
-    }
-
-    enum STATUS {
-        GREEN,
-        ORANGE,
-        RED,
-        BLACK,
-        RECON,
-        SMS,
-    }
-
-
-    interface sensorHealth {
-        status: STATUS,
-        device_id: string,
-        time: number,
-    }
 
     let readings: smokeReading[] = [];
     let sensor_status: sensorHealth[] = [];
