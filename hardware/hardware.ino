@@ -160,13 +160,6 @@ int time_offset() {
 void setup() {
   // Set up Serial Monitor at 115200 baud
   Serial.begin(115200);
-  
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);
-  pinMode(SENSOR_PIN, INPUT);
-  
-  // Attach interrupt for ESP32 configuration
-  attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), esp32reset, FALLING);
 
   Serial.println();
   Serial.println();
@@ -182,6 +175,13 @@ void setup() {
 
   // connect ESP32 automatically
   esp32config();
+  
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  pinMode(SENSOR_PIN, INPUT);
+  
+  // Attach interrupt for ESP32 configuration
+  attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), esp32reset, FALLING);
 }
 
 void loop() {
