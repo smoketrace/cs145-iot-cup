@@ -97,7 +97,6 @@
 </script>
 
 
-
 <div>
 	<h1>Smoke Chart</h1>
 

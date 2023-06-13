@@ -3,10 +3,10 @@ name: ci
 on:
   push:
     branches:
-      - [frontend-svelte, main]
+      - main
   pull_request:
     branches:
-      - [frontend-svelte, main]
+      - main
 
 jobs:
   deploy:
@@ -39,6 +39,9 @@ jobs:
           version: latest
           run_install: true
 
+      - name: Install Twilio API
+        run: pnpm install twilio
+
       - name: Build site
         run: pnpm build
         working-directory: frontend
@@ -46,6 +49,6 @@ jobs:
       - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: smoketrace-frontend
+          project: smoketrace
           entrypoint: build/index.js
           root: frontend

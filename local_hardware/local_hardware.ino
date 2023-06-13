@@ -17,23 +17,6 @@
 #define BUZZER_PIN 25
 #define SENSOR_PIN 32
 
-// Certificate needed to access https://hascion-deno-test.deno.dev/sensors API Endpoint
-const char* rootCACertificate = \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIICGzCCAaGgAwIBAgIQQdKd0XLq7qeAwSxs6S+HUjAKBggqhkjOPQQDAzBPMQsw\n" \
-"CQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJuZXQgU2VjdXJpdHkgUmVzZWFyY2gg\n" \
-"R3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBYMjAeFw0yMDA5MDQwMDAwMDBaFw00\n" \
-"MDA5MTcxNjAwMDBaME8xCzAJBgNVBAYTAlVTMSkwJwYDVQQKEyBJbnRlcm5ldCBT\n" \
-"ZWN1cml0eSBSZXNlYXJjaCBHcm91cDEVMBMGA1UEAxMMSVNSRyBSb290IFgyMHYw\n" \
-"EAYHKoZIzj0CAQYFK4EEACIDYgAEzZvVn4CDCuwJSvMWSj5cz3es3mcFDR0HttwW\n" \
-"+1qLFNvicWDEukWVEYmO6gbf9yoWHKS5xcUy4APgHoIYOIvXRdgKam7mAHf7AlF9\n" \
-"ItgKbppbd9/w+kHsOdx1ymgHDB/qo0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T\n" \
-"AQH/BAUwAwEB/zAdBgNVHQ4EFgQUfEKWrt5LSDv6kviejM9ti6lyN5UwCgYIKoZI\n" \
-"zj0EAwMDaAAwZQIwe3lORlCEwkSHRhtFcP9Ymd70/aTSVaYgLXTWNLxBo1BfASdW\n" \
-"tL4ndQavEi51mI38AjEAi/V3bNTIZargCyzuFJ0nN6T5U6VR5CmD1/iQMVtCnwr1\n" \
-"/q4AaOeMSQ+2b1tbFfLn\n" \
-"-----END CERTIFICATE-----\n";
-
 // Initialize smoke_read for smoke readings
 int smoke_read;
 
@@ -44,7 +27,7 @@ WiFiMulti WiFiMulti;
 WiFiClientSecure client;
 
 // Setup HTTP client
-HTTPClient https;
+HTTPClient http;
 
 // Buffer to contain sensor data to be sent to the server
 char buffer[200];
@@ -98,11 +81,11 @@ void setup() {
   }
   Serial.println(" connected");
 
-  // Set certificate for the client
-  client.setCACert(rootCACertificate);
+  // Insecure local access
+  client.setInsecure();
 
   // allow reuse (if server supports it)
-  https.setReuse(true);
+  http.setReuse(true);
 
   setClock(); 
 
@@ -122,33 +105,33 @@ void loop() {
     /* Stop beeping if smoke_read is low */
     EasyBuzzer.stopBeep();
   }
-  Serial.print("[HTTPS] begin...\n");
-  if (https.begin(client, "https://smoketrace-api.deno.dev/sensors")) {  // HTTPS
-    Serial.print("[HTTPS] POST...\n");
+  Serial.print("[HTTP] begin...\n");
+  if (http.begin("http://192.168.1.19:8000/sensors")) {  // HTTP
+    Serial.print("[HTTP] POST...\n");
     // payload
     // Calibrate time to nearest 10 seconds
     delay(time_offset());
     sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": %d}", smoke_read, time(nullptr));
     Serial.print(buffer);
     // start connection and send HTTP header
-    int httpCode = https.POST(buffer);
+    int httpCode = http.POST(buffer);
     // httpCode will be negative on error
     if (httpCode > 0) {
       // HTTP header has been send and Server response header has been handled
-      Serial.printf("[HTTPS] POST... code: %d\n", httpCode);
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
 
       // file found at server
       if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-        String payload = https.getString();
+        String payload = http.getString();
         Serial.println(payload);
       }
     } else {
-      Serial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
 
-    https.end();
+    http.end();
   } else {
-    Serial.printf("[HTTPS] Unable to connect\n");
+    Serial.printf("[HTTP] Unable to connect\n");
   }
   Serial.println();
   Serial.println("Waiting 10s before the next round...");
