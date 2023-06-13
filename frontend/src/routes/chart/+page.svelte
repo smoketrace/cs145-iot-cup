@@ -64,6 +64,20 @@
 
   }
 
+  let smokeChartOptions = {
+    scales: {
+      x: {
+        type: "timeseries",
+        time: {
+          unit: "hour"
+        }  
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
+  }
+
 
   
   const apiUrl = "https://smoketrace-api.deno.dev/sensors";
@@ -76,23 +90,11 @@
       graphData = JSON.parse(evt.data)
       chartData = parseSSEData(graphData)
 
-    chart = new Chart(lineGraph, {
-        type: 'line',
-        data: chartData,
-        options: {
-          scales: {
-            x: {
-              type: "timeseries",
-              time: {
-                unit: "hour"
-              }  
-            },
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
-      } )
+      chart = new Chart(lineGraph, {
+          type: 'line',
+          data: chartData,
+          options: smokeChartOptions,
+      })
     });
   
 
