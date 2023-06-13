@@ -38,6 +38,8 @@
     const chartData = {
         datasets: [
           {
+          // Add ESP 32 id here
+          label: 'ESP32-Jelly',
           data: smokeData
           }
         ]
