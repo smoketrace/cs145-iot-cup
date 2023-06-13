@@ -8,7 +8,6 @@
 #include <time.h>
 #include <WiFiManager.h>
 #include <Preferences.h>
-#include "EasyBuzzer.h"
 
 // Include definitions
 
@@ -162,7 +161,7 @@ void setup() {
   // Set up Serial Monitor at 115200 baud
   Serial.begin(115200);
   
-  EasyBuzzer.setPin(BUZZER_PIN);
+  pinMode(BUZZER_PIN, OUTPUT);
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(SENSOR_PIN, INPUT);
   
@@ -200,14 +199,11 @@ void loop() {
   }
   // Buzzer alarm sequence
   smoke_read = analogRead(SENSOR_PIN);
-  EasyBuzzer.update();
   if (smoke_read >= 384) {
-    /* Beep at a given frequency for 100 times. */
-    EasyBuzzer.beep(1000);
+    digitalWrite(BUZZER_PIN, HIGH);
   }
   else {
-    /* Stop beeping if smoke_read is low */
-    EasyBuzzer.stopBeep();
+    digitalWrite(BUZZER_PIN, LOW);
   }
   Serial.print("[HTTPS] begin...\n");
   if (https.begin(client, "https://smoketrace-api.deno.dev/sensors")) {  // HTTPS
