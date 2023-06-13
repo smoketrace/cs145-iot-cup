@@ -1,10 +1,22 @@
 <script lang="ts">
     import { STATUS } from '../../lib/helpers/types';
+
     export let status: number;
     export let seconds: number;
     export let device_id: string;
 
-    let timestamp = new Date(seconds*1000).toLocaleString();
+    export let options = {
+        month: "long",
+        day: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+    }
+
+    let timestamp = new Date(seconds*1000);
+    let time_display = new Intl.DateTimeFormat('en-US', options).format(timestamp);
 
     const statusMessages = [
         "is healthy.",
@@ -22,7 +34,7 @@
 
 <li>
     <span class="dot"></span>
-    <p>{timestamp}</p>
+    <p>{time_display}</p>
     <h3>{status_color} Status</h3>
     <span>{device_id}</span>
     <span>{statusMessages[status]}</span>
