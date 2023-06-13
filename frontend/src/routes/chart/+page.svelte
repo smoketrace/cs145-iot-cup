@@ -27,7 +27,6 @@
     let smokeData = [ ]
 
     for (const key in JsonData) {
-      // assumption, each key has a value
       const value: SmokeData = JsonData[key];
       
       smokeData.push({
@@ -35,8 +34,6 @@
         y: value.smoke_read,
       })
     }
-
-    console.log("Smoke Data", smokeData);
     
     const chartData = {
         datasets: [
@@ -53,23 +50,12 @@
   var i = 1
 
   function updateSmokeChart(newData: chartData) {
-    // console.log("1 entry:", chart.data.datasets[24]);
-
-    // Get last element from SSE
-
-    // Push the last element to chart
+    // push a new data point, then update
     chart.data.datasets[0].data.push(newData)
     chart.update()
-
   }
 
-  function updateButton() {
-    let newData = {x: 177456050000 + 1000000 * i, y: 100 * i}
-    updateSmokeChart(newData)
-    i += 1
-  }
-
-  let smokeChartOptions = {
+  let smokeChartOptions: any = {
     scales: {
       x: {
         type: "timeseries",
@@ -82,8 +68,6 @@
       },
     },
   }
-
-
   
   const apiUrl = "https://smoketrace-api.deno.dev/sensors";
   const source = new EventSource(apiUrl);
@@ -92,11 +76,9 @@
 
   onMount(() => {
     source.addEventListener("sensor",(evt) => {
-      console.log("received new smoke readings:", evt.data);
+      // console.log("received new smoke readings:", evt.data);
       graphData = JSON.parse(evt.data)
       chartData = parseSSEData(graphData)
-      console.log(chartData);
-      
 
       if (initialLoad) {
         chart = new Chart(lineGraph, {
@@ -108,13 +90,9 @@
       } else {
         // update graph, with data from last entry of chartData
         let lastChartEntry = chartData.datasets[0].data[24]
-        console.log(lastChartEntry);
         updateSmokeChart(lastChartEntry)
       }
     });
-  
-
-
   });
 </script>
 
@@ -123,9 +101,5 @@
 <div>
 	<h1>Smoke Chart</h1>
 
-	<p>
-		[Add button to refresh graph]
-	</p>
   <canvas bind:this={lineGraph} />
-  <button on:click={updateButton}>Update!</button>
 </div>
