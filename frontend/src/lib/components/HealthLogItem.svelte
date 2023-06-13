@@ -1,4 +1,7 @@
 <script lang="ts">
+    import { collectionStore } from 'sveltefire';
+    import { firestore } from '$lib/firebase';
+
     import { STATUS } from '../../lib/helpers/types';
 
     export let status: number;
@@ -30,6 +33,11 @@
 
     let status_color: string = STATUS[status];
 
+    interface contactPerson {
+        name: string,
+        phone: string,
+    }
+    const phoneDir = collectionStore<contactPerson>(firestore, 'phoneDirectoryData');
 </script>
 
 <li>
@@ -38,6 +46,20 @@
     <h3>{status_color} Status</h3>
     <span>{device_id}</span>
     <span>{statusMessages[status]}</span>
+    {#if status_color === "SMS"}
+        {@const phoneDirLength = $phoneDir.length}
+        {#if phoneDirLength == 1}
+            <span>{$phoneDir[0].name}.</span>
+        {:else}
+            {#each $phoneDir as contactPerson, count}
+                {#if count === phoneDirLength - 1}
+                    <span>{contactPerson.name}.</span>
+                {:else}
+                    <span>{contactPerson.name},&nbsp;</span>
+                {/if}
+            {/each}
+        {/if}
+    {/if}
 </li>
 
 <style>
