@@ -123,7 +123,7 @@ void esp32config(){
 
   // Check imported values
   Serial.println(device_id);
-  Serial.printf("The values in the file are: %s\n", device_id);
+  Serial.printf("The values in the file are: %s\n", device_id.c_str());
 
   preferences.end();
 
@@ -198,7 +198,7 @@ void loop() {
     // payload
     // Calibrate time to nearest 10 seconds
     delay(time_offset());
-    sprintf(buffer, "{\"device_id\": %s, \"smoke_read\": %d, \"time\": %d}", device_id, smoke_read, time(nullptr));
+    sprintf(buffer, "{\"device_id\": \"%s\", \"smoke_read\": %d, \"time\": %d}", device_id.c_str(), smoke_read, time(nullptr));
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = http.POST(buffer);
