@@ -29,7 +29,7 @@
       const value: SmokeData = JsonData[key];
       
       smokeData.push({
-        x: value.time * 1000,
+        x: value.time * 1000  ,
         y: value.smoke_read,
       })
     }
@@ -45,6 +45,26 @@
       };        
     return chartData
   }
+  
+  var chartData
+  var chart: any
+  var i = 1
+
+  function handle() {
+    // console.log("1 entry:", chart.data.datasets[24]);
+
+    // Get last element from SSE
+
+    // Push the last element to chart
+    let newData = {x: 177456050000 + 1000000 * i, y: 100 * i}
+    console.log("1 entry:", chart.data.datasets[0].data.push());
+
+    chart.data.datasets[0].data.push(newData)
+    i += 1
+    chart.update()
+
+  }
+
 
   
   const apiUrl = "https://smoketrace-api.deno.dev/sensors";
@@ -56,25 +76,27 @@
       graphData = JSON.parse(evt.data)
       chartData = parseSSEData(graphData)
 
-  new Chart(lineGraph, {
-      type: 'line',
-      data: chartData,
-      options: {
-        scales: {
-          x: {
-            type: "timeseries",
-            time: {
-              unit: "hour"
-            }  
-          },
-          y: {
-            beginAtZero: true,
+    chart = new Chart(lineGraph, {
+        type: 'line',
+        data: chartData,
+        options: {
+          scales: {
+            x: {
+              type: "timeseries",
+              time: {
+                unit: "hour"
+              }  
+            },
+            y: {
+              beginAtZero: true,
+            },
           },
         },
-      },
-    } )
-  });
-
+      } )
+    });
+  
+    
+    
 
 
     let graphData: SmokeData[]
@@ -107,14 +129,8 @@
       
     }
 
-    // dummy data, replace with fetched SSE values
-    graphData = [
-      {"device_id":"ESP32-JOSHEN","smoke_read":98,"time":{"nanoseconds":0,"seconds":1686297627}},
-      {"device_id":"ESP32-JOSHEN","smoke_read":132,"time":{"nanoseconds":0,"seconds":1686296627}}
-    ]   
 
     
-    let chartData = parseSSEData(graphData)
 
 
   });
@@ -129,4 +145,5 @@
 		[Add button to refresh graph]
 	</p>
   <canvas bind:this={lineGraph} />
+  <button on:click={handle}>Update!</button>
 </div>
