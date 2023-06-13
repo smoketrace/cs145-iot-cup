@@ -59,6 +59,7 @@ enum STATUS {
     BLACK,
     RECON,
     SMS,
+    FIRE,
 }
 
 // Define smoke tolerance
@@ -72,6 +73,8 @@ type deviceInfo = {
     status_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the device status
     sms_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the SMS service
     sms_timeout_running: boolean; // Check if the SMS timeout handler is running
+    fire_timeout_handler: ReturnType<typeof setTimeout>; // Timeout handler for the FIRE pop up
+    fire_timeout_running: boolean; // Check if the FIRE pop up timeout handler is running
 };
 
 // Dictionary to store device timers
@@ -233,9 +236,13 @@ router
         // Else, set sms_timeout_handler and sms_timeout_running to 0 and false, respectively
         let sms_timeout_handler = 0;
         let sms_timeout_running = false;
+        let fire_timeout_handler = 0;
+        let fire_timeout_running = false;
         if (devices.has(device_id)){
             sms_timeout_handler = devices.get(device_id).sms_timeout_handler;
             sms_timeout_running = devices.get(device_id).sms_timeout_running;
+            fire_timeout_handler = devices.get(device_id).fire_timeout_handler;
+            fire_timeout_running = devices.get(device_id).fire_timeout_running;
         }
 
         // Create timeout handler for the SMS service
@@ -265,12 +272,29 @@ router
                     }, 15000); // Set timeout for 15 seconds
                     sms_timeout_running = true;
                 }
+                if(!fire_timeout_running){
+                    fire_timeout_handler = setTimeout(async () => { // Set timeout handler
+                        const newSensorStatus: sensorStatus = {
+                            status: STATUS.FIRE,
+                            device_id,
+                            time,
+                        };
+                        const post_ref = push(ref(real_db, 'sensorStatus'));
+                        await set(post_ref, newSensorStatus);
+                    }, 300000); // Set timeout for 5 minutes
+                    fire_timeout_running = true;
+                }
                 break;
             case STATUS.GREEN: // Also abort SMS sending timeout if status is GREEN
                 if(sms_timeout_running){
                     console.log(devices.get(device_id));
                     clearTimeout(sms_timeout_handler);
                     sms_timeout_running = false;
+                }
+                if(fire_timeout_running){
+                    console.log(devices.get(device_id));
+                    clearTimeout(fire_timeout_handler);
+                    fire_timeout_running = false;
                 }
                 break;
         }
@@ -283,6 +307,8 @@ router
             status_timeout_handler, // Store the timeout handler for the device status
             sms_timeout_handler, // Store the timeout handler for the SMS service
             sms_timeout_running, // Store the variable that checks if the SMS timeout handler is running
+            fire_timeout_handler, // Store the timeout handler for the FIRE pop up
+            fire_timeout_running, // Store the variable that checks if the FIRE pop up timeout handler is running
         };
 
         // Update device information of the device in the device map
