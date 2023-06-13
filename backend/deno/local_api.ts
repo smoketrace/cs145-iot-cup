@@ -5,6 +5,8 @@ import { connectDatabaseEmulator, getDatabase, push, set, ref, child, get, order
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
+import { STATUS, SMOKE_TOLERANCE } from "./types.ts";
+
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
 const db = getFirestore(firebaseApp);
@@ -50,19 +52,6 @@ type phoneDirectoryData = {
     phone: string;
     name: string;
 };
-
-// Define status constants for deviceInfo type
-enum STATUS {
-    GREEN,
-    ORANGE,
-    RED,
-    BLACK,
-    RECON,
-    SMS,
-}
-
-// Define smoke tolerance
-const SMOKE_TOLERANCE = 384;
 
 // Define deviceInfo type for containing device status and information
 type deviceInfo = {
