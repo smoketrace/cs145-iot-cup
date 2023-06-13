@@ -78,7 +78,7 @@
                 <h2>Recent smoke readings</h2>
                 <ul class="logs">
                     {#each readings as {device_id, smoke_read, time}}
-                        {#if smoke_read >= 384}
+                        {#if smoke_read >= 192}
                             <SmokeLogItem seconds={time} {device_id} {smoke_read} />
                             <br>
                         {/if}
@@ -90,7 +90,7 @@
                 <ul class="logs">
                     {#each sensor_status as {time, status, device_id}}
                         {#if status !== STATUS.GREEN}
-                            <HealthLogItem seconds={time} {status}, {device_id} />
+                            <HealthLogItem seconds={time} {status} {device_id} />
                             <br>
                         {/if}
                     {/each}

@@ -10,7 +10,11 @@
 <li>
     <span class="dot"></span>
     <p>{timestamp}</p>
-    <h3>Smoke warning</h3>
+    {#if smoke_read < 384}
+        <h3>Smoke warning: LOW</h3>
+    {:else}
+        <h3>Smoke warning: HIGH</h3>
+    {/if}
     <p>{device_id} detected smoke level {smoke_read}</p>
 </li>
 
