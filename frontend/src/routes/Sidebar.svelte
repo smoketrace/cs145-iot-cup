@@ -38,6 +38,8 @@
 
 	.sidebarOpen {
 		left: 0;
+		bottom: 0;
+		position: fixed;
 	}
 
 	nav a {
@@ -93,9 +95,9 @@
 	}
 
 	.corner {
-		width: fit-content;
 		padding: 1rem;
 		padding-left: 2rem;
+		position: fixed;
 		z-index: 2;
 	}
 </style>
