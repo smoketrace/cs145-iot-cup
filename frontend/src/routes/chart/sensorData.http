@@ -1,0 +1,4 @@
+POST  HTTP/1.1 https://smoketrace-api.deno.dev/sensors
+content-type: application/json
+
+{"device_id":"ESP32-JOSHEN","smoke_read":69,"time":1686317627}

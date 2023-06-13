@@ -5,75 +5,102 @@
 
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { FY2021 as satisfactionData2021 } from '$lib/data.satisfaction.json';
-  import '@fontsource/merriweather';
-  import { Chart, registerables } from 'chart.js';
+  import { Chart, registerables, type DatasetChartOptions } from 'chart.js';
   import { onMount } from 'svelte';
-  import { fetchFromAPI } from '$lib/helpers/fetch'
-  import sensor_dummy from './../../lib/sensor_dummy.json';
-  import { graphSensorData } from '$lib/helpers/graph';
+  import 'chartjs-adapter-date-fns';
+  import { dataset_dev } from 'svelte/internal';
 
   Chart.register(...registerables);
- 
+
   let lineGraph: HTMLCanvasElement;
 
-
-  type SensorReadingType = {
-    device_id: string;
-    time: string;
-    smoke_read: number;
-  };
-
-  // parsing json data to graph data
-  function formatGraphData(sensorData: SensorReadingType[]) {
-    const labels = sensorData.map(obj => obj.time);
-    const data = sensorData.map(obj => obj.smoke_read);
-
-    let graphData = {
-      labels: labels, 
-      datasets: [
-        {
-          // TODO: label should be sensor name
-          label: "sensor 1",
-          data: data,
-          backgroundColor: 'blue'
-        },
-      ]
-    }
-    return graphData
+  interface SmokeData {
+    device_id: string,
+    smoke_read: number,
+    time: number;
   }
 
-  onMount(() => { 
-  
-    // fetching from api
-    fetchFromAPI()
-      .then((data) => {
-        return formatGraphData(data)
-      })
-      .then(graphData => {
+  interface chartData {x: number, y: number}
 
-        // creating the graph
-        new Chart(lineGraph, {
-          type: 'line', //this denotes the type of chart
-          data: graphData,
-          options: {
-            aspectRatio:2.5
+  // Parsing data from SSE to graph data
+  function parseSSEData(JsonData: SmokeData[]) {
+    let smokeData = [ ]
+
+    for (const key in JsonData) {
+      const value: SmokeData = JsonData[key];
+      
+      smokeData.push({
+        x: value.time * 1000  ,
+        y: value.smoke_read,
+      })
+    }
+    
+    const chartData = {
+        datasets: [
+          {
+          // Add ESP 32 id here
+          label: 'ESP32-Jelly',
+          data: smokeData
           }
+        ]
+      };        
+    return chartData
+  }
+  
+  var chartData
+  var chart: any
+  var i = 1
+
+  function updateSmokeChart(newData: chartData) {
+    // push a new data point, then update
+    chart.data.datasets[0].data.push(newData)
+    chart.update()
+  }
+
+  let smokeChartOptions: any = {
+    scales: {
+      x: {
+        type: "timeseries",
+        time: {
+          unit: "hour"
+        }  
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
+  }
+  
+  const apiUrl = "https://smoketrace-api.deno.dev/sensors";
+  const source = new EventSource(apiUrl);
+  let graphData: SmokeData[]
+  var initialLoad = true
+
+  onMount(() => {
+    source.addEventListener("sensor",(evt) => {
+      // console.log("received new smoke readings:", evt.data);
+      graphData = JSON.parse(evt.data)
+      chartData = parseSSEData(graphData)
+
+      if (initialLoad) {
+        chart = new Chart(lineGraph, {
+            type: 'line',
+            data: chartData,
+            options: smokeChartOptions
         })
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-})
-
-
+        initialLoad = false
+      } else {
+        // update graph, with data from last entry of chartData
+        let lastChartEntry = chartData.datasets[0].data[24]
+        updateSmokeChart(lastChartEntry)
+      }
+    });
+  });
 </script>
+
 
 <div>
 	<h1>Smoke Chart</h1>
 
-	<p>
-		[Add button to refresh graph]
-	</p>
   <canvas bind:this={lineGraph} />
 </div>
