@@ -10,6 +10,7 @@
     import { faFire } from '@fortawesome/free-solid-svg-icons'
 
     import type { smokeReading, sensorHealth } from '../../lib/helpers/types';
+    import { STATUS } from '../../lib/helpers/types';
     import SmokeLogItem from '../../lib/components/SmokeLogItem.svelte';
     import HealthLogItem from '$lib/components/HealthLogItem.svelte';
 
