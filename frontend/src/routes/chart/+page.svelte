@@ -50,14 +50,13 @@
   var chart: any
   var i = 1
 
-  function handle() {
+  function updateSmokeChart() {
     // console.log("1 entry:", chart.data.datasets[24]);
 
     // Get last element from SSE
 
     // Push the last element to chart
     let newData = {x: 177456050000 + 1000000 * i, y: 100 * i}
-    console.log("1 entry:", chart.data.datasets[0].data.push());
 
     chart.data.datasets[0].data.push(newData)
     i += 1
@@ -69,6 +68,7 @@
   
   const apiUrl = "https://smoketrace-api.deno.dev/sensors";
   const source = new EventSource(apiUrl);
+  let graphData: SmokeData[]
 
   onMount(() => {
     source.addEventListener("sensor",(evt) => {
@@ -95,42 +95,6 @@
       } )
     });
   
-    
-    
-
-
-    let graphData: SmokeData[]
-    const evtSource = new EventSource("https://smoketrace-api.deno.dev/sensors/");
-    evtSource.onmessage = function(event) {
-      graphData = JSON.parse(event.data)
-      console.log(graphData);
-      chartData = parseSSEData(graphData)
-      
-      // graph here
-      
-    new Chart(lineGraph, {
-      type: 'line',
-      data: chartData,
-      options: {
-        scales: {
-          x: {
-            type: "timeseries",
-            time: {
-              unit: "hour"
-            }  
-          },
-          y: {
-            beginAtZero: true,
-          },
-        },
-      },
-    });
-      
-      
-    }
-
-
-    
 
 
   });
@@ -145,5 +109,5 @@
 		[Add button to refresh graph]
 	</p>
   <canvas bind:this={lineGraph} />
-  <button on:click={handle}>Update!</button>
+  <button on:click={updateSmokeChart}>Update!</button>
 </div>
