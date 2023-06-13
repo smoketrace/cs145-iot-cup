@@ -21,7 +21,7 @@
 
 <li>
     <span class="dot"></span>
-    <p>{time_display}</p>
+    <p class="time">{time_display}</p>
     {#if smoke_read < 384}
         <h3>Smoke warning: LOW</h3>
     {:else}
@@ -31,5 +31,13 @@
 </li>
 
 <style>
+    .time {
+        font-size: smaller;
+    }
 
+    li {
+        background-color: var(--cement-grey);
+        padding: 0.25rem 1rem;
+        border-radius: 0.35rem;
+    }
 </style>

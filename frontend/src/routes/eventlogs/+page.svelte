@@ -6,9 +6,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 
-    import Fa from 'svelte-fa/src/fa.svelte';
-    import { faFire } from '@fortawesome/free-solid-svg-icons'
-
     import type { smokeReading, sensorHealth } from '../../lib/helpers/types';
     import { STATUS } from '$lib/helpers/types';
     import { visibleStore, openModal } from '$lib/helpers/showAlert';
@@ -50,7 +47,6 @@
     }
 </script>
 
-<Fa icon={faFire} />
 <h1>Incident Logs</h1>
 
 <main>
@@ -90,8 +86,17 @@
     }
 
     .columns {
-        display: flex;
-        justify-content: space-around;
         align-items: stretch;
+        display: flex;
+        gap: 1rem;
+        justify-content: space-around;
+    }
+
+    section {
+        max-width: 40%;
+    }
+
+    ul {
+        padding-left: 0.8rem;
     }
 </style>
