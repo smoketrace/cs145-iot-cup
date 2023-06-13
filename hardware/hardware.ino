@@ -7,9 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <WiFiManager.h>
-#include <FS.h>
-#include <SPIFFS.h>
-#include <ArduinoJson.h>
+#include <Preferences.h>
 #include "EasyBuzzer.h"
 
 // Include definitions
@@ -57,6 +55,15 @@ char buffer[200];
 // Boolean to store resetButtonPressed status
 bool resetButtonPressed = false;
 
+// Device_id to store device ID/name
+String device_id;
+
+// Flag for saving data
+bool shouldSaveConfig = false;
+
+// Preferences to store persistent preferences
+Preferences preferences;
+
 // Not sure if WiFiClientSecure checks the validity date of the certificate. 
 // Setting clock just to be sure...
 void setClock() {
@@ -79,19 +86,64 @@ void setClock() {
   Serial.print(curr_time);
 }
 
+void saveConfigCallback()
+// Callback notifying us of the need to save configuration
+{
+  Serial.println("Should save config");
+  shouldSaveConfig = true;
+}
+
 // Run ESP32 configuration
 void esp32config(){
+  // load preferences if exists
+  preferences.begin("smoketrace-app", false);
+
+  // obtain preferences if exists
+  device_id = preferences.getString("device_id", "");
+
   // set configportal timeout
   wm.setConfigPortalTimeout(120);
+   
+  // Set config save notify callback
+  wm.setSaveConfigCallback(saveConfigCallback);
 
-  if(!wm.autoConnect("Unknown SmokeTrace Device")) {
-    Serial.println("Failed to connect or hit timeout");
+  // set device_id field
+  WiFiManagerParameter device_id_box("device_id_key", "Set up your device ID", "", 50, "placeholder='Enter your device ID/name here (3-50 chars only)' minlength='3' maxlength='50'");
+  wm.addParameter(&device_id_box);
+
+  if(device_id == ""){
+    if(!wm.startConfigPortal("Unknown SmokeTrace Device")) {
+      Serial.println("Failed to connect or hit timeout");
+      ESP.restart();
+    } 
+    else {
+      //if you get here you have connected to the WiFi    
+      Serial.println("connected...yeey :)");
+    }
+  } else {
+    if(!wm.autoConnect("Unknown SmokeTrace Device")) {
+      Serial.println("Failed to connect or hit timeout");
+      ESP.restart();
+    } 
+    else {
+      //if you get here you have connected to the WiFi    
+      Serial.println("connected...yeey :)");
+    }
+  }
+
+  // Save the custom parameters to FS
+  if (shouldSaveConfig)
+  {
+    preferences.putString("device_id", device_id_box.getValue());
     ESP.restart();
-  } 
-  else {
-    //if you get here you have connected to the WiFi    
-    Serial.println("connected...yeey :)");
-  }  
+  }
+
+  // Check imported values
+  Serial.println(device_id);
+  Serial.printf("The values in the file are: %s\n", device_id);
+
+  preferences.end();
+
   setClock();
 }
 
@@ -137,8 +189,9 @@ void loop() {
   if (resetButtonPressed) {
     // Reset WiFi settings
     wm.resetSettings();
+    // clear saved preferences
+    preferences.clear();
     delay(1000);  // Delay to ensure the reset is completed
-
     // Restart the device
     ESP.restart();
   }
@@ -162,7 +215,7 @@ void loop() {
     // payload
     // Calibrate time to nearest 10 seconds
     delay(time_offset());
-    sprintf(buffer, "{\"device_id\": \"ESP32_EYRON\", \"smoke_read\": %d, \"time\": %d}", smoke_read, time(nullptr));
+    sprintf(buffer, "{\"device_id\": %s, \"smoke_read\": %d, \"time\": %d}", device_id, smoke_read, time(nullptr));
     Serial.print(buffer);
     // start connection and send HTTP header
     int httpCode = https.POST(buffer);
