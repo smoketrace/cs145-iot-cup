@@ -4,12 +4,9 @@
 	import logo_circle from '$lib/images/SmokeTrace_Logo_Circle.svg';
 
 	export let sidebarOpen = false;
+	let route: string;
+	$: route = $page.url.pathname;
 
-	function matchRoute(route: string) {
-		console.log($page.url.pathname);
-		console.log(route);
-		return $page.url.pathname == route ? 'currPage' : '';
-	}
 </script>
 
 	<div class="corner">
@@ -17,10 +14,10 @@
 	</div>
 	<nav class:sidebarOpen>
 		<div class="btnGroup">
-			<button class={matchRoute('/')}><a class={matchRoute('/')} href="/">Dashboard</a></button>
-			<button class={matchRoute('/chart')}><a class={matchRoute('/chart')} href="/chart">Smoke Chart</a></button>
-			<button class={matchRoute('/eventlogs')}><a class={matchRoute('/eventlogs')} href="/eventlogs">Incident Log</a></button>
-			<button class={matchRoute('/about')}><a class={matchRoute('/about')} href="/about">About</a></button>
+			<button class:currPage={route === '/'}><a class:currPage={route === '/'} href="/">Dashboard</a></button>
+			<button class:currPage={route === '/chart'}><a class:currPage={route === '/chart'} href="/chart">Smoke Chart</a></button>
+			<button class:currPage={route === '/eventlogs'}><a class:currPage={route === '/eventlogs'} href="/eventlogs">Incident Log</a></button>
+			<button class:currPage={route === '/about'}><a class:currPage={route === '/about'} href="/about">About</a></button>
 		</div>
 	</nav>
 
