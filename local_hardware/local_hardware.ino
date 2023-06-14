@@ -11,7 +11,7 @@
 // Include definitions
 
 #define SMOKE_INT 5 // Define SMOKE_INT to be the time interval (in seconds) for sending of smoke data
-#define BUZZER_PIN 25 // Define BUZZER_PIN to be the pin used for the buzzer
+#define BUZZER_PIN 26 // Define BUZZER_PIN to be the pin used for the buzzer
 #define SENSOR_PIN 32 // Define SENSOR_PIN to be the pin used for the sensor
 #define TRIGGER_PIN 0 // Define TRIGGER_PIN to be the pin used for the WiFiManager
 
