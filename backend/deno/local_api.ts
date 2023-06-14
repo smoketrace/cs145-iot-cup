@@ -3,7 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebas
 import { connectFirestoreEmulator, getFirestore, collection, getDoc, setDoc, addDoc, updateDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 import { connectDatabaseEmulator, getDatabase, push, set, ref, child, get, orderByChild, limitToLast, onValue, DataSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
-import { TwilioSMS, SMSRequest } from './twilio/twilioSMS.ts';
 
 const firebaseConfig = JSON.parse(Deno.env.get("FIREBASE_CONFIG"));
 const firebaseApp = initializeApp(firebaseConfig, "smoketrace-145");
@@ -14,22 +13,10 @@ const real_db = getDatabase(firebaseApp);
 connectDatabaseEmulator(real_db, 'localhost', 9000);
 connectFirestoreEmulator(db, 'localhost', 8080);
 
-// Twilio SMS Credentials
-const accountSid: string = <string>(
-  Deno.env.get('TWILIO_ACCOUNT_SID')
+// Semaphore SMS Credentials
+const apiKey: string = <string>(
+  Deno.env.get('API_KEY')
 );
-const keySid: string = <string>(
-  Deno.env.get('TWILIO_API_KEY')
-);
-const secret: string = <string>(
-  Deno.env.get('TWILIO_API_SECRET')
-);
-const fromPhoneNumber: string = <string>(
-  Deno.env.get('TWILIO_FROM_PHONE_NUMBER')
-);
-
-// Create helper variable for Twilio SMS service
-const helper = new TwilioSMS(accountSid, keySid, secret);
 
 // Add type to contain pure sensor data from ESP32
 type sensorData = {
@@ -253,12 +240,13 @@ router
                         const phone_numbers_snapshot = await getDocs(collection(db, "phoneDirectoryData"));
                         phone_numbers_snapshot.forEach((doc) => {
                             const phone_data = doc.data();
-                            const message: SMSRequest = {
-                                From: fromPhoneNumber,
-                                To: phone_data.phone,
-                                Body: `Hi ${phone_data.name}! ${device_id} has a HIGH reading for 15s already.`, // Initialize string for body
-                            };
-                            helper.sendSms(message).subscribe(console.log); // Send SMS message for continuous RED readings
+                            fetch('https://semaphore.co/api/v4/messages', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                              },
+                              body: `apikey=${apiKey} &number=${phone_data.phone}&message=Hi ${phone_data.name}! ${device_id} has a HIGH reading for 15s already.`
+                            });
                         });
                         console.log(`${device_id} has a HIGH reading for 15s already. SMS sent.`); // Print to console upon 15 seconds of continuous HIGH smoke readings
                         console.log(devices.get(device_id)); // Print to console about the latest device information of the continuously RED device
