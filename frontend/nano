@@ -1,0 +1,191 @@
+3ed696d feat(frontend): add simple styling for logs
+d49b4cc feat(frontend): display warning message on `FIRE` status
+c115ffc feat: display name of recipient on SMS status
+e3da7e6 feat: display more readable date and time format
+eeb5c47 feat(frontend): display custom message for status
+86c1f41 refactor(frontend): create global types
+959bb57 feat(frontend): display LOW readings
+674d9f9 feat: create component for sensor health reports
+5df8b99 feat: display two columns for readings and status
+9c88225 feat: display smoke readings log
+c0881ab feat(frontend): parse sensor status events
+1842b3c feat(frontend): log updates from server in console
+9ae0856 fix: rearrange `pinMode` to fix `digitalWrite` not responding
+810ab01 refactor: remove `EasyBuzzer` local files
+9d86f0a fix: remove `EasyBuzzer` to use `digitalWrite` instead for the buzzer
+65a57d0 fix: add `c_str()` to solve issues in string formatting for `device_id`
+755dd1d fix(api): remove `devices[]` array in `phoneDirectoryData`
+e24c363 feat: add persistent custom parameter for storing sensor name
+006283a feat(hardware): add persistent WiFi config settings
+0556a0d feat: add status listeners to backend code
+bfad57f feat: add initial WiFi manager code
+5756a5d fix: extend sidebar to full page length
+5eee97d feat(backend): add `FIRE` status for site pop ups
+603e0ef refactor: change sidebar text colors
+03bb3e0 feat: modified chart x-axis to be in minutes
+972b12f build: added hardcoded graph label
+61841b6 fix!: updated package.json bug from merging
+937fcc4 Merge branch 'main' into frontend-graph
+0a7c824 refactor: cleaned up chart route console logs
+eb10ff4 feat: implemented graph updates when receiving updates via SSE
+264f7e9 refactor: refactored graphOptions into a separate variable
+c8d2f7a refactor: removed duplicate chart code
+bb28b8a feat: handled graph updates using hardcoded data
+11ce2d5 fix: allowed rendering from updated backend SSE
+5ba2026 refactor: remove `devices` from `phoneDirectoryData`
+105f401 fix: remove `toPhoneNumber` in `local_api.ts`
+49fbd99 feat: add multiple sending of SMS for HIGH readings
+4dddd1e feat: add new statuses with asynchronous uploads (#41)
+7a7543f fix(api): resolve type mismatches + missing variables + code cleanup (#43)
+946b25f fix: return blank list on empty database and change firebase index rules
+5c4c49e fix: add `ServerSentInit` object with `sensor_event` or `status_event` as `data`
+1798322 feat: add upload codes for `RECON`, `ORANGE`, `BLACK`, and `SMS` statuses
+390115a feat: add extra `onValue` listener for the device status
+153c290 fix: perform return fixes and device map updates on timeouts
+b056903 refactor: remove assertions and fix code returns
+7430e42 fix(api): resolve database fetch
+4723736 refactor(api): add type annotation for DataSnapshot
+a847f1e fix(api): add devices field to phoneDirectoryData
+db90c2e refactor(api): assert that firebase_config env exists
+77368c2 fix(api): apply enum types
+b191a8c refactor(api): rename status function and invoke it
+e20b561 fix(api): prefix status enum
+ef70cfc fix(api): add the `status` field to `sensorData`
+07b9d30 fix(api): assert that `devices.get(device_id)` exists
+b5c5fd2 chore: add .vscode directory to gitignore
+43b3fa4 feat(frontend): add sidebar navigation (#36)
+3975fd8 refactor: include status smoke tolerance condition in `RECON` `switch`
+1c24e7b fix: reorder priority of `RECON`, `RED`, and `GREEN` in status definition
+6a8b242 feat: database upload from SMS and status timeouts and add new statuses
+640fe31 feat(frontend): log high smoke readings (#38)
+3de24c2 fix(frontend): correct parsing of timestamp
+143d94f feat: add `time` and `status` to payload
+900f22f fix(frontend): change threshold of high/low readings
+005541a fix(frontend): redo parsing function with new return type
+43b426c feat!: listen to SSE for graph render
+14e9596 fix(frontend): resolve font imports
+5c1e6bc feat(frontend): use library to render icons from FontAwesome
+0796b75 feat(frontend): create component for log entries
+6038052 feat(client): display logs as simple text with timestamp
+c6d82cb feat(client): pre-process data for logging
+47d9cb1 chore: update dependencies
+1033546 feat(frontend): use SSE to fetch data for logs
+188cccb fix: change SSE return type for `GET /sensors` as array of values (#39)
+63e18ee fix: change hardware and backend code for local testing
+239b2fd refactor: relocate and rename hardware sketches to root directory
+9dd880d refactor: add `local` folder for local hardware testing
+7185af9 feat: add local emulator suite code for Firebase Firestore and Realtime databases
+6caf1f0 build: setup local firebase config files for local emulator suite
+0ce2eb2 refactor: parseSSEData refactored into a separate function
+5e03307 fix: resolve style conflicts
+12c0d1f feat(frontend): import fonts
+44ee154 build!: chart parsing
+da37226 build: additional parsing to graph from SSE
+9fad67e feat: added typescript types for SmokeData
+dcae5b8 feat(frontend): add sidebar
+90fde83 feat(frontend): add global white color
+d23e46d build: data parsing of data from SSE
+37b4dff feat: added chart time parsing
+bd53f4b fix: added date_time adapter for Chart.js
+cb57027 refactor: change buzzer pin to 25 (#33)
+b65ee22 feat(backend): `phone_directory` REST methods (#30)
+015efb5 fix: resolve merge conflicts in `import` from `main`
+0c3990c feat(client): listen to updates from API through SSE
+faa7fa9 perf: use Realtime database in place of Firestore database
+63024c7 perf: limit `GET /sensors` return to last 25 entries (#32)
+66de83e feat(frontend): display smoke readings as an incident log (#26)
+f45bab9 refactor(frontend): limit logged smoke data entries to 25
+8d0acbb refactor: use `phone` as `phoneDirectoryData` primary key in place of random hashes
+b4f70b1 refactor(frontend): limit logged entries to 50
+0187e40 fix: change current to working sensor configuration code (#29)
+3b5d103 refactor(backend): change smoke tolerance to `384` (#28)
+d051b3e feat(api): introduce data endpoint for deviceInfo obtaining (#27)
+7da0f30 feat(backend): add POST methods for adding phone directory data in the database
+312cfe6 refactor: change POST packet timestamp field to `time_t` (#25)
+f1d7271 feat: show number of fetched entries
+3de6bc3 feat: sort logged entries by ascending timestamp
+1401fb8 chore: delete `.vscode` directory
+2f92619 build: change `deploy.yml` to deploy web app from main
+1b80c85 feat: introduce data endpoint for deviceInfo obtaining
+75f63d0 fix: rename project on Deno
+ac8e7ab fix: change deployment branch to main
+1e263d7 refactor: create a Date object from the reading timestamp
+68ceb01 feat: display log of smoke readings from database
+2a94ca7 build: initialize Firebase
+5bc14f6 feat(frontend): graph sensor data from api  (#13)
+a17ccfb feat: modify type of time field to Timestamp (#24)
+29cb78f fix: multiply received time value by 1000 to convert to milliseconds
+fb92153 chore: remove Token import
+55456c8 feat: modify type of time field to Timestamp
+f3dd5d9 feat: integrate smoke sensor logic for `smoke_read` (#23)
+6555f7a fix: move message initialization to sms_timeout_handler (#22)
+ee17775 fix: move message initialization to sms_timeout_handler
+a41fb39 fix: introduce new environment variables and fixes in Twilio setup (#21)
+b64e126 chore(backend): remove obsolete `nodejs` folder
+f730b73 feat: introduce to and from phone number environment variables
+eca58ac fix: add Body field in message initialization
+436e762 fix: replace bool type with boolean
+9ef4c15 feat: add `sms_timeout_running` to check status of `sms_timeout`
+430e79e feat: add test SMS feature for continuous RED readings
+c8f123e feat: extend existing data structures to include SMS-based timeouts
+8e6fdb4 feat: add credentials for Twilio SMS service in the API
+6cb9ac4 chore(backend): relocate `twilio` modules to `deno`
+70b5bf2 chore: remove old firebase files
+5b11b2f chore(`TwilioSMS`): remove extra newlines at the end of the file
+aa186b6 build: place Twilio API install above building and deployment
+79940c8 test(`twilio`): make the `twilioSMStest` file for testing SMS sending
+ab00d7a build: install the Twilio api
+e03f7b2 feat(`twilio`): implement `TwilioSMS` class and methods
+d76e60a fix: added type assertion for fetched data
+df6ccd0 refactor: combined json parsing functions into 1 function
+240c650 feat: allowed graph generation from API data
+3a3f703 refactor: separated json parsing logic into separate functions
+b15b0e6 build: graphing sensor dummy_data
+3aa7ae2 fix: fixed promise handling to fix null value bug
+141facd build: added sample line graph
+b747b2b build: chart.js graph now working on dummy data
+6c4133e build: Added sveltekit graph dependencies
+76e0f2d fix: rewrite ternary operator syntax
+fb8a120 feat: new `BLACK` state with adjustments for other states
+b9fcc7a refactor: add helper function to fetch from API
+db90953 refactor: improve imported assets
+43fb368 chore: delete unused frontend-svelte folder
+cab6ec3 fix: indicate deviceInfo entry fields when creating object
+7209205 feat: add `deviceInfo` object for additional device information
+e8a733c build: added dummy values for sensor_data
+754c6e9 build: added fetching data from api
+55589ba refactor: deleted frontend-svelte folder
+8e6e754 feat: add timeout for each logged device (#10)
+ca64526 fix: declare  as const variable and use template literal for timeout message
+1ff2432 feat: add timeout for each logged device
+7a0e3a0 refactor: change URL based on smoketrace-api Deno project
+e03d335 build: reconfigure yaml to also deploy from the main branch
+9fcca5e build(deps): update Node.js version
+37c9346 fix: resolve entrypoint for deployment
+d89df52 build!: deploy initial webpage
+1319d21 Initial commit (front-end web app)
+43de8ba feat: add buzzer code for ESP32 (#7)
+fd37a8d feat: add buzzer code for ESP32
+590be64 fix(backend): enabled CORS for deno server
+6495f44 refactor: hide firebase_config
+c2c5f8d build: Added GET for api/phones route
+399fd0e feat: upload deno-based api server code
+485dc87 feat: add time synchronization and HTTP connection persistence (#6)
+a451820 feat: add time synchronization and HTTP connection persistence
+b2c2504 feat: POST functionality and resources for ESP32 (#5)
+6ed5637 Merge branch 'main' into eyron
+e18ed6c feat: add POST functionality for ESP32
+3c2007f feat: add certificate for use in ESP32 POST requests
+56b9997 feat: add `hardware` code for ESP32 (#4)
+fd3f396 feat: add `hardware` code for ESP32
+0cde045 refactor: remove python virtual environment
+bbc0a04 refactor: modified PORT to read from process.env
+9f0f35d build: Added sensor routes to handle GET request for sensors
+571320e build: added nodejs boilerplate
+7caadfa build: add python virtual environment for `backend`
+791f2c1 refactor: rename `public` to `frontend`
+579fa10 refactor!: remove firebase server hosting
+4e1b8ff build: update `pip` in virtual environment
+aed9f99 build: set up python virtual environment
+2adf207 build: add firebase backend cloud computing service
+a9cfffe Initial commit
