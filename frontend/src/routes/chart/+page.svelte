@@ -25,7 +25,7 @@
   // Parsing data from SSE to graph data
   function parseSSEData(JsonData: SmokeData[]) {
     let smokeData = [ ]
-    let chartDatasets: {label: string, data: {x: number, y: number }[]}[] = []
+    let chartDatasets = []
 
     for (const key in JsonData) {
       const value: SmokeData = JsonData[key];
@@ -49,19 +49,13 @@
       // unique graph labeling 
     }
 
-    console.log(chartDatasets);
+    console.log("New chart Dataset", chartDatasets);
     
-
-
     const chartData = {
-        datasets: [
-          {
-          // Add ESP 32 id here
-          label: 'ESP32-Jelly',
-          data: smokeData
-          }
-        ]
-      };        
+      datasets: chartDatasets
+    }
+    console.log("Orig Chart Data", chartData);
+    
     return chartData
   }
   
