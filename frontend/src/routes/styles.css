@@ -46,6 +46,7 @@
 
 	font-family: 'Roboto', system-ui;
 	font-weight: 300;
+	color: var(--smoketrace-black);
 }
 
 body {

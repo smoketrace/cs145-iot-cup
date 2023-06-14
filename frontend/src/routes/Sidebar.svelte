@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
+	import Fa from 'svelte-fa/src/fa.svelte';
+    import { faCircleInfo, faClipboardList, faHouseChimney, faLineChart } from '@fortawesome/free-solid-svg-icons'
+
 	import logo_circle from '$lib/images/SmokeTrace_Logo_Circle.svg';
 
 	export let sidebarOpen = false;
@@ -14,10 +17,26 @@
 	</div>
 	<nav class:sidebarOpen>
 		<div class="btnGroup">
-			<button class:currPage={route === '/'}><a class:currPage={route === '/'} href="/">Dashboard</a></button>
-			<button class:currPage={route === '/chart'}><a class:currPage={route === '/chart'} href="/chart">Smoke Chart</a></button>
-			<button class:currPage={route === '/eventlogs'}><a class:currPage={route === '/eventlogs'} href="/eventlogs">Incident Log</a></button>
-			<button class:currPage={route === '/about'}><a class:currPage={route === '/about'} href="/about">About</a></button>
+			<button class:currPage={route === '/'}>
+				<a class:currPage={route === '/'} href="/">
+					<Fa icon={faHouseChimney} />&nbsp;Dashboard
+				</a>
+			</button>
+			<button class:currPage={route === '/chart'}>
+				<a class:currPage={route === '/chart'} href="/chart">
+					<Fa icon={faLineChart} />&nbsp;Smoke Chart
+				</a>
+			</button>
+			<button class:currPage={route === '/eventlogs'}>
+				<a class:currPage={route === '/eventlogs'} href="/eventlogs">
+					<Fa icon={faClipboardList} />&nbsp;Incident Log
+				</a>
+			</button>
+			<button class:currPage={route === '/about'}>
+				<a class:currPage={route === '/about'} href="/about">
+					<Fa icon={faCircleInfo} />&nbsp; About
+				</a>
+			</button>
 		</div>
 	</nav>
 
@@ -29,7 +48,7 @@
 		left: -100%;
         position: absolute;
 		transition: left 0.5s cubic-bezier(0.25, 0, 0.15, 1);
-		width: 120px;
+		width: 136px;
         z-index: 1;
 	}
 
@@ -93,7 +112,7 @@
 
 	.corner {
 		padding: 1rem;
-		padding-left: 2rem;
+		padding-left: 2.6rem;
 		position: fixed;
 		z-index: 2;
 	}
