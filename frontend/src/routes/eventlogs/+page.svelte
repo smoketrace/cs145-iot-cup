@@ -47,9 +47,9 @@
     }
 </script>
 
-<h1>Incident Logs</h1>
 
 <main>
+    <h1>Incident Logs</h1>
     {#if readings === undefined || sensor_status === undefined}
         <em>Waiting for data...</em>
     {:else}

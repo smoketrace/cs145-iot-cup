@@ -1,51 +1,31 @@
 <script>
-	import textlogo from '$lib/images/SmokeTrace_Logo_Text.svg';
+	import MiniChart from '../routes/chart/+page.svelte';
+	import MiniLogs from '../routes/eventlogs/+page.svelte';
 </script>
 
 <svelte:head>
 	<title>Dashboard</title>
-	<meta name="description" content="SmokeTrace webapp dashboard" />
+	<meta name="description" content="SmokeTrace web app dashboard" />
 </svelte:head>
 
 <section>
-		<span class="frontpage"> 
-			<picture>
-				<source srcset={textlogo} type="image/svg" />
-				<img src={textlogo} alt="SmokeTrace text logo" />
-			</picture>
-		</span>
-		<p>
-			A smart smoke detection and fire alarm system for the home, built out of ESP32 microcontrollers and hosted on the cloud.
-		</p>
+	<h1>SmokeTrace Dashboard</h1>
+	<div class="mini-windows">
+		<div class="graph-container">
+			<MiniChart />
+		</div>
+		<MiniLogs />
+	</div>
 </section>
 
 <style>
-	section {
+	.mini-windows {
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
+		gap: 4rem;
+		justify-content: space-evenly;
 	}
 
-	p {
-		color: var(--smoke-beige);
-		font-style: italic;
-	}
-
-	.frontpage {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.frontpage img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
+	.graph-container {
+		width: 60%;
 	}
 </style>
