@@ -63,9 +63,21 @@
   var chart: any
   var i = 1
 
-  function updateSmokeChart(newData: chartData) {
+  function updateSmokeChart(value: {"device_id":string,"smoke_read":number,"time":number}) {
+    let newData = {x: value.time* 1000, y: value.smoke_read}
+    const datasetsIndex = chart.data.datasets.findIndex(obj => obj.label ===  value.device_id)
+    if (datasetsIndex !== -1) {
+      // if found
+      chart.data.datasets[datasetsIndex].data.push(newData)
+    } else {
+      // if new entry
+      chart.data.datasets.push({label: value.device_id, data: [newData]})
+    }
+
+
     // push a new data point, then update
-    chart.data.datasets[0].data.push(newData)
+    // chart.data.datasets[0].data.push(newData)
+    console.log("updating chart", chart.data.datasets);
     chart.update()
   }
 
@@ -88,7 +100,7 @@
   let graphData: SmokeData[]
   var initialLoad = true
 
-  onMount(() => {
+  onMount(() =>   {
     source.addEventListener("sensor",(evt) => {
       // console.log("received new smoke readings:", evt.data);
       graphData = JSON.parse(evt.data)
@@ -103,9 +115,18 @@
         initialLoad = false
       } else {
         // update graph, with data from last entry of chartData
-        let lastChartEntry = chartData.datasets[0].data[24]
-        updateSmokeChart(lastChartEntry)
+        
+        
+        // let lastChartEntry = chartData.datasets[0].data[24]
+        // updateSmokeChart(lastChartEntry)
+
+        let lastGraphDataElement = graphData[graphData.length - 1]
+        updateSmokeChart(lastGraphDataElement)
+        
       }
+      // console.log("raw SSE", graphData);
+      // console.log("last element", lastGraphDataElement);
+      
     });
   });
 </script>
