@@ -62,7 +62,7 @@
       x: {
         type: "timeseries",
         time: {
-          unit: "hour"
+          unit: "minute"
         }  
       },
       y: {
