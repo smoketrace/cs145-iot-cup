@@ -36,7 +36,6 @@
       } 
       smokeData.push(newData)
 
-      // unique graph labeling 
       const datasetsIndex = chartDatasets.findIndex(obj => obj.label ===  value.device_id)
       if (datasetsIndex !== -1) {
         // if found
@@ -46,16 +45,11 @@
         chartDatasets.push({label: value.device_id, data: [newData]})
       }
 
-      // unique graph labeling 
     }
-
-    console.log("New chart Dataset", chartDatasets);
     
     const chartData = {
       datasets: chartDatasets
     }
-    console.log("Orig Chart Data", chartData);
-    
     return chartData
   }
   
@@ -74,10 +68,6 @@
       chart.data.datasets.push({label: value.device_id, data: [newData]})
     }
 
-
-    // push a new data point, then update
-    // chart.data.datasets[0].data.push(newData)
-    console.log("updating chart", chart.data.datasets);
     chart.update()
   }
 
@@ -102,7 +92,6 @@
 
   onMount(() =>   {
     source.addEventListener("sensor",(evt) => {
-      // console.log("received new smoke readings:", evt.data);
       graphData = JSON.parse(evt.data)
       chartData = parseSSEData(graphData)
 
@@ -114,19 +103,10 @@
         })
         initialLoad = false
       } else {
-        // update graph, with data from last entry of chartData
-        
-        
-        // let lastChartEntry = chartData.datasets[0].data[24]
-        // updateSmokeChart(lastChartEntry)
-
         let lastGraphDataElement = graphData[graphData.length - 1]
         updateSmokeChart(lastGraphDataElement)
         
       }
-      // console.log("raw SSE", graphData);
-      // console.log("last element", lastGraphDataElement);
-      
     });
   });
 </script>
