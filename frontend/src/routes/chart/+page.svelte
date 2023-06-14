@@ -25,16 +25,34 @@
   // Parsing data from SSE to graph data
   function parseSSEData(JsonData: SmokeData[]) {
     let smokeData = [ ]
+    let chartDatasets: {label: string, data: {x: number, y: number }[]}[] = []
 
     for (const key in JsonData) {
       const value: SmokeData = JsonData[key];
       
-      smokeData.push({
+      const newData = {
         x: value.time * 1000  ,
         y: value.smoke_read,
-      })
+      } 
+      smokeData.push(newData)
+
+      // unique graph labeling 
+      const datasetsIndex = chartDatasets.findIndex(obj => obj.label ===  value.device_id)
+      if (datasetsIndex !== -1) {
+        // if found
+        chartDatasets[datasetsIndex].data.push(newData)
+      } else {
+        // if new entry
+        chartDatasets.push({label: value.device_id, data: [newData]})
+      }
+
+      // unique graph labeling 
     }
+
+    console.log(chartDatasets);
     
+
+
     const chartData = {
         datasets: [
           {
