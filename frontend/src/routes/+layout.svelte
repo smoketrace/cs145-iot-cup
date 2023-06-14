@@ -1,13 +1,20 @@
-<script>
+<script lang="ts">
 	import './styles.css';
 
 	import Sidebar from './Sidebar.svelte';
-	
+    import FireAlert from '$lib/components/FireAlert.svelte';
+
+	import { visibleStore } from '$lib/helpers/showAlert';
+
 	let sidebarOpen = false;
+	let showFireAlert: boolean;
+	$: showFireAlert = $visibleStore;
+
 </script>
 
 <div class="app">
-	<Sidebar bind:sidebarOpen/>
+	<Sidebar bind:sidebarOpen />
+	<FireAlert bind:showFireAlert/>
 
 	<main>
 		<slot />
