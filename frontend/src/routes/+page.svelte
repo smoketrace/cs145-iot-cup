@@ -16,8 +16,10 @@
 			<MiniChart />
 			<a href="/chart"><Button>View full graph</Button></a>
 		</div>
-		<div class="logs-container">
-			<MiniLogs />
+		<div class="logs-and-button">
+			<div class="logs-container">
+				<MiniLogs />
+			</div>
 			<a href="/eventlogs"><Button>View logs</Button></a>
 		</div>
 	</div>
@@ -42,4 +44,7 @@
 		overflow-y: scroll;
 		overflow-x: none;
 	}
+
+	/* .logs-and-button */
+
 </style>
