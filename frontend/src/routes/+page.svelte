@@ -16,7 +16,10 @@
 			<MiniChart />
 			<a href="/chart"><Button>View full graph</Button></a>
 		</div>
-		<MiniLogs />
+		<div class="logs-container">
+			<MiniLogs />
+			<a href="/eventlogs"><Button>View logs</Button></a>
+		</div>
 	</div>
 </section>
 
@@ -32,5 +35,11 @@
 		flex-direction: column;
 		gap: 1.5rem;
 		width: 60%;
+	}
+
+	.logs-container {
+		height: 30rem;
+		overflow-y: scroll;
+		overflow-x: none;
 	}
 </style>
